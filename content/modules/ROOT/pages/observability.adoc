@@ -350,6 +350,11 @@ spec:
     tls:
       caName: loki-s3-ca            # CA cert for NooBaa's S3 endpoint
   storageClassName: ${DEFAULT_SC}    # uses the cluster's default storage class
+  limits:
+    global:
+      ingestion:
+        ingestionRate: 16            # MB/sec — default 2 is too low for busy clusters
+        ingestionBurstSize: 32       # MB — must exceed largest single push request
   tenants:
     mode: openshift-logging          # multi-tenant: separates app, infra, and audit logs
 EOF
@@ -381,6 +386,13 @@ metadata:
   name: collector
   namespace: openshift-logging
 spec:
+  collector:
+    resources:
+      limits:
+        memory: 8Gi                  # default 2Gi is too low for busy clusters
+      requests:
+        cpu: 500m
+        memory: 256Mi
   serviceAccount:
     name: collector
   outputs:
