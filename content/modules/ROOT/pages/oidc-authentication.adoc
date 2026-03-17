@@ -50,12 +50,14 @@ spec:
 EOF
 ----
 
-Wait for the operator to install:
+Wait for the operator to install. This waits specifically for the RHBK CSV and then confirms the Keycloak CRD is registered — other operators may already show `Succeeded` in the namespace so we need to be specific:
 
 [source,bash,role="execute"]
 ----
 echo "Waiting for RHBK operator..."
-until oc get csv -n rhbk 2>/dev/null | grep -q Succeeded; do sleep 10; done
+until oc get csv -n rhbk 2>/dev/null | grep rhbk-operator | grep -q Succeeded; do sleep 10; done
+echo "Waiting for Keycloak CRD..."
+until oc get crd keycloaks.k8s.keycloak.org 2>/dev/null | grep -q keycloaks; do sleep 5; done
 echo "RHBK operator ready"
 ----
 
