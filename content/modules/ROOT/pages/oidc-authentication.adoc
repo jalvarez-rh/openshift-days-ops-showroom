@@ -115,13 +115,17 @@ Copy the URL and open it in a **new browser tab**. Log in with the admin credent
 
 image::oidc-rhbk-users.png[RHBK admin console after login]
 
-You're now in the Red Hat build of Keycloak admin console. This is where you manage realms, users, clients, and authentication flows.
+You're now in the Red Hat build of Keycloak admin console. You'll see the **master realm** welcome page:
+
+image::oidc-rhbk-welcome.png[RHBK admin console welcome page showing master realm]
+
+This is where you manage realms, users, clients, and authentication flows.
 
 == Step 3: Create an OpenShift Realm
 
 Keycloak uses **realms** to isolate sets of users, credentials, and clients. The default `master` realm is for Keycloak administration only — you should always create a separate realm for your applications.
 
-1. Click the realm dropdown (top-left, where it says **Red Hat build of Keycloak**)
+1. In the left sidebar, click **Manage realms**
 2. Click **Create realm**
 3. Set **Realm name** to: `OpenShift`
 4. Click **Create**
