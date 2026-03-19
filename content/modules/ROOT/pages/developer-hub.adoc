@@ -22,8 +22,8 @@ By the end of this module, you will be able to:
 * Understand what Red Hat Developer Hub (RHDH) is and how it fits into platform operations
 * Verify RHDH deployment health and status
 * Navigate RHDH resources in OpenShift console and CLI
-* Troubleshoot common RHDH issues
-* Understand how software templates reduce operational toil
+* Enable dynamic plugins to extend RHDH functionality
+* Connect the software catalog to live cluster resources
 
 == What is Red Hat Developer Hub?
 
@@ -196,6 +196,7 @@ metadata:
   description: Weather microservices application
   annotations:
     backstage.io/kubernetes-namespace: ops-track-demo   # links to OpenShift namespace
+    backstage.io/kubernetes-id: weather-app              # matches labels on deployments
   tags:
     - openshift
     - ops-track
@@ -226,128 +227,181 @@ Click on either one to see the component overview page showing the owner, lifecy
 
 In production, this catalog would contain hundreds of services across dozens of teams. Developers find services, understand who owns them, read documentation, and check deployment status — all without asking ops. When teams leave or services are deprecated, the catalog makes it visible instead of leaving orphaned workloads running in the cluster.
 
-[NOTE]
-====
-In a full RHDH deployment, you'd configure auto-discovery to scan Git repositories for `catalog-info.yaml` files automatically. You'd also integrate plugins for Kubernetes, ArgoCD, and Tekton so the catalog shows live pod status, deployment sync state, and pipeline runs directly in the portal.
-====
+But right now, this catalog is just a list. Click on `weather-app` — you see metadata, but nothing about what's actually running in the cluster. A developer looking at this would still have to ask you: _"Is my app running? How many pods are up? Any restarts?"_
 
-=== Software Templates: Golden Paths
+Let's fix that.
 
-**The Ops Superpower:** Software Templates let you define **how apps should be created**.
+== Hands-On: Enable the Kubernetes Plugin
 
-A **golden path** is a pre-approved, ops-blessed way to create applications:
+This is where RHDH goes from a static catalog to a **live operational dashboard**. We're going to enable the Kubernetes plugin so that when a developer clicks on a service in the catalog, they see real-time pod status, resource usage, and deployment health — without needing `oc` access, without a ticket, without asking anyone.
 
-* Create Git repo
-* Generate app scaffold (language-specific)
-* Create OpenShift namespace with quotas
-* Apply RBAC (developer access, not cluster-admin)
-* Set up CI/CD pipeline
-* Add monitoring/alerting
-* Register in service catalog
+Think about how many times a week your team gets asked: _"Is my app running?"_ You're about to eliminate that question.
 
-**Benefits for Ops:**
+=== Step 1: Create a Service Account for RHDH
+
+RHDH needs read access to the cluster to display Kubernetes resources. We'll create a dedicated service account with **least-privilege access** — `cluster-reader`, not `cluster-admin`:
+
+[source,bash,role="execute"]
+----
+oc create serviceaccount rhdh-kubernetes-plugin -n backstage
+----
+
+[source,bash,role="execute"]
+----
+oc adm policy add-cluster-role-to-user cluster-reader -z rhdh-kubernetes-plugin -n backstage
+----
+
+Create a token for the service account and store it as a Secret that RHDH can use:
+
+[source,bash,role="execute"]
+----
+SA_TOKEN=$(oc create token rhdh-kubernetes-plugin -n backstage --duration=8760h)
+oc create secret generic rhdh-kubernetes-plugin-token -n backstage \
+  --from-literal=K8S_PLUGIN_SA_TOKEN="$SA_TOKEN"
+----
+
+=== Step 2: Enable the Dynamic Plugins
+
+RHDH ships with dozens of plugins bundled in the image — they just need to be switched on. We'll enable three:
+
+* **Kubernetes Backend** — connects to the cluster API to fetch pod/deployment data
+* **Kubernetes Frontend** — renders the Kubernetes tab on catalog components
+* **Topology** — provides a visual map of how application components connect
+
+Create a ConfigMap that tells RHDH which plugins to activate:
+
+[source,bash,role="execute"]
+----
+cat <<'EOF' | oc apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dynamic-plugins-rhdh
+  namespace: backstage
+data:
+  dynamic-plugins.yaml: |
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins:
+      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes-backend-dynamic
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-plugin-kubernetes
+        disabled: false
+      - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+        disabled: false
+EOF
+----
+
+=== Step 3: Configure the Cluster Connection
+
+Now tell RHDH where to find the cluster and how to authenticate. We need the API server URL, the console URL (so developers can click through to OpenShift), and the cluster's CA certificate for secure communication:
+
+[source,bash,role="execute"]
+----
+API_URL=$(oc whoami --show-server)
+CONSOLE_URL=$(oc get route console -n openshift-console -o jsonpath='https://{.spec.host}')
+CA_DATA=$(oc get configmap kube-root-ca.crt -n backstage -o jsonpath='{.data.ca\.crt}' | base64 | tr -d '\n')
+EXISTING=$(oc get configmap app-config-rhdh -n backstage -o jsonpath='{.data.app-config-rhdh\.yaml}')
+
+UPDATED=$(printf '%s\nkubernetes:\n  serviceLocatorMethod:\n    type: multiTenant\n  clusterLocatorMethods:\n    - type: config\n      clusters:\n        - name: openshift\n          url: %s\n          authProvider: serviceAccount\n          caData: "%s"\n          serviceAccountToken: ${K8S_PLUGIN_SA_TOKEN}\n          dashboardUrl: %s\n          dashboardApp: openshift\n' "$EXISTING" "$API_URL" "$CA_DATA" "$CONSOLE_URL")
+
+oc create configmap app-config-rhdh -n backstage \
+  --from-literal="app-config-rhdh.yaml=$UPDATED" \
+  --dry-run=client -o yaml | oc apply -f -
+----
+
+NOTE: We're using the cluster's CA certificate (`caData`) rather than skipping TLS verification. In production, always use proper certificates — never `skipTLSVerify`.
+
+=== Step 4: Apply the Configuration
+
+Now patch the Backstage Custom Resource to tell the Operator about our new dynamic plugins ConfigMap and the service account token Secret:
+
+[source,bash,role="execute"]
+----
+oc patch backstage developer-hub -n backstage --type=merge -p '{
+  "spec": {
+    "application": {
+      "dynamicPluginsConfigMapName": "dynamic-plugins-rhdh",
+      "extraEnvs": {
+        "secrets": [
+          {
+            "name": "rhdh-kubernetes-plugin-token"
+          }
+        ]
+      }
+    }
+  }
+}'
+----
+
+The Operator sees the CR change and triggers a rolling restart — new pods with plugins enabled, old pods terminated, zero downtime. Watch it happen:
+
+[source,bash,role="execute"]
+----
+oc rollout status deployment/backstage-developer-hub -n backstage --timeout=300s
+----
+
+This takes 2-3 minutes as the init container installs the dynamic plugins before the main container starts.
+
+=== Step 5: Label the Workloads
+
+The Kubernetes plugin discovers pods by matching a label on the workloads to the `backstage.io/kubernetes-id` annotation on the catalog component. Label the weather app deployments:
+
+[source,bash,role="execute"]
+----
+for dep in weather-api weather-backend weather-cache weather-frontend weather-proxy; do
+  oc patch deployment $dep -n ops-track-demo --type=json \
+    -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"weather-app"}]'
+done
+----
+
+=== Step 6: See It in Action
+
+Go back to the **Developer Hub** tab and click on **weather-app** in the catalog. You should now see:
+
+* A **Kubernetes** tab showing all 5 pods with their status, restarts, and age
+* A **Topology** tab showing a visual map of the weather app's deployments
+
+image::rhdh-kubernetes-tab.png[Kubernetes tab showing live pod status for weather-app]
+
+**This is the moment.** A developer clicks a service in the catalog and sees exactly what's running — pod count, restart history, resource usage — without `oc` access, without opening a ticket, without messaging you on Slack.
+
+You configured this once. Every service in the catalog gets this for free when it has the right annotations and labels. That's the Kubernetes plugin eliminating your most common developer question: _"Is my app running?"_
+
+== What You Just Built
+
+Take a step back and look at what you configured as a platform admin:
 
 [cols="1,2"]
 |===
-|Ops Challenge |How Templates Help
+|What You Did |Why It Matters
 
-|**Inconsistent configurations**
-|Every app follows same pattern
+|**Created a scoped Service Account**
+|Least-privilege access — RHDH can read cluster state but can't modify anything
 
-|**Manual provisioning tickets**
-|Self-service reduces toil
+|**Enabled Dynamic Plugins via ConfigMap**
+|No rebuilding images, no redeployment from scratch — just declare which plugins to activate
 
-|**Security misconfigurations**
-|Security built into template
+|**Configured cluster connection in app-config**
+|Centralized configuration managed through OpenShift-native ConfigMaps and Secrets
 
-|**Quota violations**
-|Templates enforce resource limits
+|**Patched the Backstage CR**
+|The Operator handled the rolling restart — you declared intent, OpenShift did the work
 
-|**Missing monitoring**
-|Templates add Prometheus annotations
+|**Labeled workloads for discovery**
+|Standard Kubernetes labels connect catalog entries to live resources
 |===
 
-=== Plugin Architecture
+Every step used OpenShift primitives you already know: Service Accounts, RBAC, ConfigMaps, Secrets, Operators, Custom Resources, and rolling deployments. RHDH isn't a black box — it's just another workload managed with the same tools you use for everything else.
 
-RHDH uses plugins to integrate with your infrastructure:
+== Going Further
 
-* **Kubernetes Plugin** - View pods, deployments, services directly in portal
-* **Tekton Plugin** - View CI/CD pipeline runs and logs
-* **ArgoCD Plugin** - View GitOps sync status
-* **RHACS Plugin** - View security scan results
-* **Topology Plugin** - Visual application topology
+This module gave you a working RHDH with live cluster visibility. A full platform engineering implementation adds:
 
-Plugins are configured via the app-config and require appropriate RBAC permissions.
-
-== Summary: How RHDH Fits into Ops Workflow
-
-[cols="1,2"]
-|===
-|Ops Activity |How RHDH Helps
-
-|**Developer requests new app**
-|Self-service via templates, no manual provisioning
-
-|**Onboarding new team**
-|Portal provides discoverability, no scattered docs
-
-|**Enforcing standards**
-|Templates bake in security, quotas, monitoring
-
-|**Tracking all services**
-|Catalog provides single source of truth
-
-|**Compliance auditing**
-|See which apps follow which patterns
-
-|**Reducing toil**
-|Automation via templates and plugins
-|===
-
-**Key operational commands:**
-
-[source,bash]
-----
-# View RHDH pods
-oc get pods -n backstage
-
-# Check Backstage CR status
-oc get backstage -n backstage
-
-# View application logs
-oc logs -n backstage -l rhdh.redhat.com/app=backstage-developer-hub --tail=50
-
-# Check health endpoint
-curl -sk $(oc get route backstage-developer-hub -n backstage -o jsonpath='https://{.spec.host}')/.backstage/health/v1/readiness
-
-# View configuration
-oc get configmaps -n backstage
-
-# Restart after config changes
-oc rollout restart deployment/backstage-developer-hub -n backstage
-----
-
-== Key Takeaways
-
-* **Self-Service** - Developers provision apps without tickets
-* **Governance** - Ops defines templates with security baked in
-* **Standardization** - Golden paths ensure consistency
-* **Visibility** - Catalog shows everything in one place
-* **Reduced Toil** - Automation eliminates manual provisioning
-* **Operator-Managed** - RHDH Operator handles deployment lifecycle
-
-== Going Further: Platform Engineering
-
-This module showed you **RHDH basics from an Ops perspective**.
-
-**A full RHDH implementation includes:**
-
-- Software templates with multi-step workflows
-- Git integration (GitHub, GitLab)
-- CI/CD integration (Tekton, ArgoCD)
-- SSO authentication (OIDC, SAML)
-- Custom plugins for your organization
-- Populated software catalog
-- TechDocs for documentation
+* **Software Templates** — developers click "Create New App" and get a namespace, pipeline, git repo, and catalog entry automatically, all following ops-defined golden paths
+* **RBAC Plugin** — control who can register components, create from templates, or view specific services
+* **SSO Integration** — connect to your identity provider so developers log in with their existing credentials
+* **CI/CD Plugins** — Tekton pipeline runs and ArgoCD sync status visible directly in the catalog
+* **TechDocs** — documentation lives alongside the code and renders in the portal
 
 **Interested in a deep-dive?** Ask your instructor about the **Platform Engineering with RHDH Workshop**.

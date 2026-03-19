@@ -1,4 +1,13 @@
 apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: ops-team
+  description: Operations team responsible for platform infrastructure
+spec:
+  type: team
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: weather-app
