@@ -207,7 +207,7 @@ spec:
 
 Register two applications from this workshop into the catalog:
 
-1. In the Developer Hub portal, scroll down to **Explore Your Software Catalog** and click **Register a component** (or click the **+** icon in the top navigation bar)
+1. In the **Developer Hub** tab, scroll down to **Explore Your Software Catalog** and click **Register a component** (or click the **+** icon in the top navigation bar)
 2. Paste this URL:
 +
 [source,role="copypaste"]
