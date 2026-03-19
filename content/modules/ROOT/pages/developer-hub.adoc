@@ -122,39 +122,9 @@ oc rollout status deployment/backstage-developer-hub -n backstage --timeout=120s
 
 NOTE: In production, you'd also configure a GitHub integration with an access token for private repositories. The `backend.reading.allow` approach works for public repos.
 
-=== Step 3: Get the Developer Hub URL
+=== Step 3: Access the Portal
 
-Get the Developer Hub portal URL:
-
-[source,bash,role="execute"]
-----
-oc get route backstage-developer-hub -n backstage -o jsonpath='https://{.spec.host}'
-----
-
-Output:
-
-----
-https://backstage-developer-hub-backstage.apps.cluster-GUID.example.com
-----
-
-View all routes in the backstage namespace:
-
-[source,bash,role="execute"]
-----
-oc get routes -n backstage
-----
-
-=== Step 4: Access the Portal
-
-1. **Open the Developer Hub URL** in a new browser tab
-2. You'll see the **Red Hat Developer Hub** login page
-3. Select **Guest** to enter without authentication
-
-image::rhdh-login-page.png[Developer Hub login page]
-
-Click **Enter** under Guest to access the portal.
-
-You're now in the **Developer Hub Portal**.
+Click the **Developer Hub** tab at the top of Showroom. You'll see the login page — select **Guest** and click **Enter**.
 
 image::rhdh-home-page.png[Developer Hub home page]
 
