@@ -5,6 +5,7 @@ metadata:
   description: Weather microservices application used in the Ops Track troubleshooting module
   annotations:
     backstage.io/kubernetes-namespace: ops-track-demo
+    backstage.io/kubernetes-id: weather-app
   tags:
     - openshift
     - ops-track
@@ -21,6 +22,7 @@ metadata:
   description: Web application protected by OADP backup and restore
   annotations:
     backstage.io/kubernetes-namespace: backup-demo
+    backstage.io/kubernetes-id: backup-demo-app
   tags:
     - openshift
     - ops-track
