@@ -326,12 +326,13 @@ Wait for the OAuth rollout:
 [source,bash,role="execute"]
 ----
 oc rollout status deployment/oauth-openshift -n openshift-authentication
+echo "Waiting for all OAuth pods to be ready with new config..."
+until [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-headers 2>/dev/null | grep -c Running)" -ge 3 ] && \
+      [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-headers 2>/dev/null | grep -vc Running)" -eq 0 ]; do
+  sleep 5
+done
+echo "OAuth is live with rhbk provider — you can log in now"
 ----
-
-[NOTE]
-====
-The OAuth rollout can take 2-3 minutes. If you get errors when trying to log in, wait and try again.
-====
 
 == Step 8: Test OIDC Login and Automatic Group Sync
 
