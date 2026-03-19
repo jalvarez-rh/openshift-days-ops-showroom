@@ -696,9 +696,9 @@ oc delete user normaluser1 fancyuser1 fancyuser2 teamuser1 teamuser2 --ignore-no
 oc delete identity --all --ignore-not-found
 oc delete group ose-fancy-dev ose-normal-dev ose-teamed-app ose-user --ignore-not-found
 
-# Remove cluster-admin from fancyuser1
-oc adm policy remove-cluster-role-from-user cluster-admin fancyuser1 --ignore-not-found
-oc adm policy remove-cluster-role-from-group cluster-reader ose-fancy-dev --ignore-not-found
+# Remove RBAC bindings
+oc adm policy remove-cluster-role-from-user cluster-admin fancyuser1 2>/dev/null || true
+oc adm policy remove-cluster-role-from-group cluster-reader ose-fancy-dev 2>/dev/null || true
 
 # Remove test projects
 oc delete project app-dev app-test app-prod --ignore-not-found
