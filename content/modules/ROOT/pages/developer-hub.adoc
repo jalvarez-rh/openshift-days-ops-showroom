@@ -294,23 +294,22 @@ EOF
 
 === Step 3: Configure the Cluster Connection
 
-Now tell RHDH where to find the cluster and how to authenticate. We need the API server URL, the console URL (so developers can click through to OpenShift), and the cluster's CA certificate for secure communication:
+Now tell RHDH where to find the cluster and how to authenticate. We need the API server URL and the console URL (so developers can click through to OpenShift):
 
 [source,bash,role="execute"]
 ----
 API_URL=$(oc whoami --show-server)
 CONSOLE_URL=$(oc get route console -n openshift-console -o jsonpath='https://{.spec.host}')
-CA_DATA=$(oc get configmap kube-root-ca.crt -n backstage -o jsonpath='{.data.ca\.crt}' | base64 | tr -d '\n')
 EXISTING=$(oc get configmap app-config-rhdh -n backstage -o jsonpath='{.data.app-config-rhdh\.yaml}')
 
-UPDATED=$(printf '%s\nkubernetes:\n  serviceLocatorMethod:\n    type: multiTenant\n  clusterLocatorMethods:\n    - type: config\n      clusters:\n        - name: openshift\n          url: %s\n          authProvider: serviceAccount\n          caData: "%s"\n          serviceAccountToken: ${K8S_PLUGIN_SA_TOKEN}\n          dashboardUrl: %s\n          dashboardApp: openshift\n' "$EXISTING" "$API_URL" "$CA_DATA" "$CONSOLE_URL")
+UPDATED=$(printf '%s\nkubernetes:\n  serviceLocatorMethod:\n    type: multiTenant\n  clusterLocatorMethods:\n    - type: config\n      clusters:\n        - name: openshift\n          url: %s\n          authProvider: serviceAccount\n          skipTLSVerify: true\n          serviceAccountToken: ${K8S_PLUGIN_SA_TOKEN}\n          dashboardUrl: %s\n          dashboardApp: openshift\n' "$EXISTING" "$API_URL" "$CONSOLE_URL")
 
 oc create configmap app-config-rhdh -n backstage \
   --from-literal="app-config-rhdh.yaml=$UPDATED" \
   --dry-run=client -o yaml | oc apply -f -
 ----
 
-NOTE: We're using the cluster's CA certificate (`caData`) rather than skipping TLS verification. In production, always use proper certificates — never `skipTLSVerify`.
+NOTE: We're using `skipTLSVerify` for this workshop environment. In production, you would configure the cluster's CA certificate using `caData` or `caFile` instead.
 
 === Step 4: Apply the Configuration
 
@@ -323,6 +322,12 @@ oc patch backstage developer-hub -n backstage --type=merge -p '{
     "application": {
       "dynamicPluginsConfigMapName": "dynamic-plugins-rhdh",
       "extraEnvs": {
+        "envs": [
+          {
+            "name": "NODE_TLS_REJECT_UNAUTHORIZED",
+            "value": "0"
+          }
+        ],
         "secrets": [
           {
             "name": "rhdh-kubernetes-plugin-token"
