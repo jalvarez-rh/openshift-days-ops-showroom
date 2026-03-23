@@ -51,6 +51,8 @@ You should see one pod in `Running` status. You can also see your pod in the **O
 
 Before moving on, get familiar with the two most important diagnostic commands. These work on any pod in any namespace. The console's pod detail view (click any pod name) shows the same information across the **Details**, **Events**, and **Logs** tabs — the console log viewer supports real-time streaming, text search, and downloading.
 
+image::app-mgmt-pod-details.png[Pod detail page showing Overview with Events and resource usage]
+
 Get detailed information about a pod — events, node placement, container status:
 
 [source,bash,role="execute"]
@@ -115,6 +117,8 @@ oc scale deployment weathernow --replicas=3
 ----
 
 Now switch to the **OCP Console** tab: **Workloads -> Pods** (project: `app-management`). Watch the new pods appear in real-time with status transitions (Pending → ContainerCreating → Running).
+
+image::app-mgmt-scaling-pods.png[Pod list showing 3 weathernow pods after scaling]
 
 You can also verify via CLI:
 
@@ -311,4 +315,14 @@ oc create route edge myapp --service=myapp     # Expose with TLS
 oc scale deployment myapp --replicas=N         # Scale
 oc rollout undo deployment/myapp               # Rollback
 oc rollout status deployment/myapp             # Watch rollout
+----
+
+== Cleanup
+
+NOTE: If the **Ingress & Load Balancing** module is part of your workshop, **skip this cleanup** — it reuses the `weathernow` application in the `app-management` namespace.
+
+[source,bash,role="execute"]
+----
+oc delete namespace app-management --ignore-not-found --wait=false
+echo "Cleanup running in background — you can continue to the next module"
 ----

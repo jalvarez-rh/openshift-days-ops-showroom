@@ -39,6 +39,8 @@ Query cluster CPU usage using the console metrics viewer:
 
 You'll see a time-series graph showing cluster CPU usage over time — far more useful than a point-in-time number.
 
+image::observe-metrics-query.png[Observe Metrics page showing cluster CPU usage query result]
+
 TIP: Try other queries like `node_memory_MemAvailable_bytes` or `kubelet_running_pods` to explore what metrics are available.
 
 For quick CLI snapshots, you can also use:
@@ -56,6 +58,8 @@ oc adm top pods -A --sort-by=cpu | head -15
 === Dashboards in the Console
 
 Navigate to **Observe -> Dashboards** in the OpenShift console. Key dashboards include:
+
+image::observe-dashboards-list.png[Observe Dashboards showing Kubernetes Compute Resources Cluster dashboard]
 
 * **etcd** - Control plane database health
 * **Kubernetes / Compute Resources / Cluster** - Cluster-wide CPU and memory
@@ -243,6 +247,8 @@ EOF
 ----
 
 While the operators install, navigate to **Ecosystem -> Installed Operators** in the **OCP Console** (select **All Projects**) and watch them appear. You'll see the status change from `Installing` to `Succeeded` in real-time — this is how you'd monitor operator installs in production.
+
+image::observe-operator-install.png[Installed Operators showing Loki Cluster Logging and Cluster Observability operators with Succeeded status]
 
 Wait for all three operators to be ready (this can take 2-3 minutes):
 
@@ -467,6 +473,8 @@ Click **Refresh** to reload the console with the new Logs view.
 
 Navigate to **Observe -> Logs** in the console. You'll see three log types:
 
+image::observe-logs-view.png[Observe Logs view showing infrastructure logs with severity filter]
+
 * **Application** — Logs from user workloads
 * **Infrastructure** — Logs from OpenShift components
 * **Audit** — Kubernetes API audit logs
@@ -494,23 +502,24 @@ It may take 1-2 minutes for logs to start appearing after the collector pods are
 
 == Cleanup
 
-Remove the logging stack you deployed. The Prometheus monitoring stack is built-in and doesn't need cleanup.
+Remove the logging stack you deployed. The Prometheus monitoring stack is built-in and doesn't need cleanup. The LokiStack teardown takes a couple of minutes — this runs in the background so you can continue.
 
 [source,bash,role="execute"]
 ----
-# Remove the logging pipeline and UI
-oc delete clusterlogforwarder collector -n openshift-logging --ignore-not-found
-oc delete uiplugin logging --ignore-not-found
-
-# Remove LokiStack and storage
-oc delete lokistack logging-loki -n openshift-logging --ignore-not-found
-oc delete obc loki-bucket -n openshift-logging --ignore-not-found
-oc delete secret lokistack-dev-s3 -n openshift-logging --ignore-not-found
-oc delete configmap loki-s3-ca -n openshift-logging --ignore-not-found
-oc delete sa collector -n openshift-logging --ignore-not-found
-
-# Remove the custom alerting rule
+# Remove the custom alerting rule (instant)
 oc delete prometheusrule ops-track-alerts -n openshift-monitoring --ignore-not-found
+
+# Remove the logging stack in the background
+(
+  oc delete clusterlogforwarder collector -n openshift-logging --ignore-not-found
+  oc delete uiplugin logging --ignore-not-found
+  oc delete lokistack logging-loki -n openshift-logging --ignore-not-found
+  oc delete obc loki-bucket -n openshift-logging --ignore-not-found
+  oc delete secret lokistack-dev-s3 -n openshift-logging --ignore-not-found
+  oc delete configmap loki-s3-ca -n openshift-logging --ignore-not-found
+  oc delete sa collector -n openshift-logging --ignore-not-found
+) &>/dev/null &
+echo "Cleanup running in background — you can continue to the next module"
 
 echo "Cleanup complete"
 ----

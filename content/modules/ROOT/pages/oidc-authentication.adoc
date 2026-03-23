@@ -90,7 +90,9 @@ Wait for the pod to start:
 
 [source,bash,role="execute"]
 ----
-echo "Waiting for Keycloak pod..."
+echo "Waiting for Keycloak pod to be created..."
+until oc get pod keycloak-0 -n rhbk 2>/dev/null; do sleep 5; done
+echo "Waiting for Keycloak to be ready..."
 oc wait --for=condition=Ready pod/keycloak-0 -n rhbk --timeout=120s
 echo "Keycloak is running"
 ----
@@ -142,6 +144,8 @@ You're now working inside the OpenShift realm. Everything you create from here �
 == Step 4: Create Users
 
 Create three users representing different roles in your organization.
+
+IMPORTANT: All four fields (**Username**, **Email**, **First name**, **Last name**) must be filled in. Keycloak's user profile policy requires them — if any are missing, the user's account will be marked as "not fully set up" and login will fail with an unhelpful error.
 
 **Create the first user (admin1):**
 
@@ -448,21 +452,18 @@ spec:
         name: htpasswd
 CLEANUP
 
-# Delete RHBK namespace (removes operator and Keycloak)
-oc delete namespace rhbk --ignore-not-found
-
-# Delete client secret
+# Delete client secret and OIDC users/groups (instant)
 oc delete secret rhbk-client-secret -n openshift-config --ignore-not-found
-
-# Delete OIDC users, identities, and groups
 oc delete user developer1 admin1 viewer1 --ignore-not-found
 oc delete group ocp-admins ocp-developers ocp-viewers --ignore-not-found
 
-# Delete test projects
-oc delete project app-development app-production --ignore-not-found
-
-# Wait for OAuth rollout
-oc rollout status deployment/oauth-openshift -n openshift-authentication
+# Delete RHBK namespace, projects, and wait for OAuth rollout in the background
+(
+  oc delete namespace rhbk --ignore-not-found
+  oc delete project app-development app-production --ignore-not-found
+  oc rollout status deployment/oauth-openshift -n openshift-authentication --timeout=120s
+) &>/dev/null &
+echo "Cleanup running in background — you can continue to the next module"
 echo "Cleanup complete"
 ----
 

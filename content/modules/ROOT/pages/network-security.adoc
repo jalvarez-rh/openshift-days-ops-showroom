@@ -509,10 +509,9 @@ CoreDNS provides DNS resolution for all pods in the cluster.
 
 [source,bash,role="execute"]
 ----
-# Delete network policy test namespaces
-oc delete namespace netpol-frontend netpol-backend --ignore-not-found
-
-echo "Cleanup complete"
+# Delete network policy test namespaces in the background
+oc delete namespace netpol-frontend netpol-backend --ignore-not-found --wait=false
+echo "Cleanup running in background — you can continue to the next module"
 ----
 
 == Summary

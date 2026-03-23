@@ -29,7 +29,7 @@ oc new-project performance-demo
 
 [source,bash,role="execute"]
 ----
-oc apply -f https://raw.githubusercontent.com/jnewsome97/openshift-ops-workshops-showroom/main/support/memory-hog.yaml
+oc apply -f https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/memory-hog.yaml
 ----
 
 Wait for it to run:
@@ -53,6 +53,8 @@ The app requested **2Gi memory** and **500m CPU**. That's a lot of cluster capac
 === Check What It Actually Uses
 
 Wait for metrics to become available (~60 seconds after pod starts). While you wait, switch to the **OCP Console** tab and navigate to **Workloads -> Pods** (project: `performance-demo`). Click the pod name and look at the **Metrics** tab — you can watch CPU and memory graphs populate in real-time.
+
+image::perf-pod-metrics.png[Pod Metrics tab showing CPU and memory usage graphs]
 
 [source,bash,role="execute"]
 ----
@@ -83,7 +85,7 @@ If not installed:
 
 [source,bash,role="execute"]
 ----
-oc apply -f https://raw.githubusercontent.com/jnewsome97/openshift-ops-workshops-showroom/main/support/vpa-operator.yaml
+oc apply -f https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/vpa-operator.yaml
 ----
 
 Wait for the operator (~1 minute):
@@ -101,7 +103,7 @@ Create a VPA resource targeting the memory-hog deployment. We're using `updateMo
 
 [source,bash,role="execute"]
 ----
-oc apply -f https://raw.githubusercontent.com/jnewsome97/openshift-ops-workshops-showroom/main/support/vpa-memory-hog.yaml
+oc apply -f https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/vpa-memory-hog.yaml
 ----
 
 Wait for VPA to analyze the pod:
@@ -151,7 +153,7 @@ Now let's deploy an application that needs to scale horizontally based on traffi
 
 [source,bash,role="execute"]
 ----
-oc apply -f https://raw.githubusercontent.com/jnewsome97/openshift-ops-workshops-showroom/main/support/demo-app.yaml
+oc apply -f https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/demo-app.yaml
 ----
 
 Wait for it to be ready:
@@ -191,6 +193,8 @@ oc run load-generator --image=busybox --restart=Never -- /bin/sh -c "while true;
 While the load generator runs, switch to the **OCP Console** tab and navigate to **Observe -> Dashboards**. Select **Kubernetes / Compute Resources / Namespace (Pods)** and choose project `performance-demo`. Watch CPU utilisation climb in real-time on the graph.
 
 Then navigate to **Workloads -> Pods** (project: `performance-demo`) and watch new pods appear as the HPA scales up.
+
+image::perf-hpa-pods-scaling.png[Pod list showing multiple demo-app pods after HPA scale-up]
 
 You can also watch via CLI:
 

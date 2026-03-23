@@ -115,13 +115,15 @@ oc create secret generic ldap-secret \
   -n openshift-config
 ----
 
-**Download and store the CA certificate:**
+**Extract the CA certificate chain from the LDAP server:**
 
 [source,bash,role="execute"]
 ----
 mkdir -p $HOME/support
-curl -sL https://certs.godaddy.com/repository/gd-class2-root.crt -o $HOME/support/ca.crt
+echo | openssl s_client -connect ldap.jumpcloud.com:636 -showcerts 2>/dev/null | awk 'BEGIN{n=0} /BEGIN CERTIFICATE/{n++} n>=2{print}' > $HOME/support/ca.crt
 ----
+
+NOTE: This extracts the intermediate and root CA certificates directly from the LDAP server's TLS handshake. This is more reliable than downloading a static CA file, which may not match the server's current certificate chain.
 
 **Create ConfigMap with CA certificate:**
 
@@ -210,12 +212,20 @@ oc get pods -n openshift-authentication
 
 All oauth-openshift pods should be `Running` and `Ready 1/1`.
 
-[NOTE]
-====
-The OAuth operator rollout can take 2-3 minutes to complete. If you get an error like `error: invalid credentials` or `unexpected response status 500` when trying to log in, wait a few minutes and try again.
-====
+The OAuth pods need a few moments after rollout to fully initialize their LDAP connections. Wait for them to be ready:
+
+[source,bash,role="execute"]
+----
+echo "Waiting for OAuth pods to initialize LDAP connections..."
+sleep 30
+echo "Ready to test LDAP authentication"
+----
 
 == Step 4: Test LDAP Authentication
+
+If you reload the **OCP Console** tab and log out, you'll now see both identity providers on the login page:
+
+image::ldap-login-selector.png[OpenShift login page showing htpasswd and ldap identity providers]
 
 First, capture the API server URL for login commands:
 
@@ -396,6 +406,13 @@ For more on roles, see link:https://docs.redhat.com/en/documentation/openshift_c
 [source,bash,role="execute"]
 ----
 oc login -u normaluser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify
+oc whoami
+----
+
+IMPORTANT: Verify `oc whoami` shows `normaluser1`. If it still shows `admin`, the login failed — wait 30 seconds and try again.
+
+[source,bash,role="execute"]
+----
 oc get projects
 ----
 
@@ -406,7 +423,7 @@ Result: `No resources found.` (Regular users can't see all projects)
 [source,bash,role="execute"]
 ----
 oc login -u fancyuser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify
-oc get projects
+oc whoami
 ----
 
 Now you see **all projects** in the cluster:
@@ -493,6 +510,10 @@ oc get rolebindings -n app-dev
 oc describe rolebinding -n app-dev | grep -A 5 ose-teamed-app
 ----
 
+In the **OCP Console**, navigate to **User Management -> RoleBindings**, select project `app-dev`, and click the rolebinding named **edit**. Switch to the **YAML** tab to see the full binding — it shows the group `ose-teamed-app` bound to the `edit` ClusterRole:
+
+image::ldap-rolebinding-yaml.png[RoleBinding YAML showing ose-teamed-app group bound to edit ClusterRole in app-dev]
+
 == Step 9: Test Project Permissions
 
 **Test as normaluser1 (no group access):**
@@ -500,17 +521,27 @@ oc describe rolebinding -n app-dev | grep -A 5 ose-teamed-app
 [source,bash,role="execute"]
 ----
 oc login -u normaluser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify
-oc get projects
+oc whoami
 ----
 
-Result: You may see some system namespaces but **no application projects** (app-dev, app-test, app-prod). This user is not in any project-specific groups.
+[source,bash,role="execute"]
+----
+oc get projects | grep app-
+----
+
+Result: No `app-` projects visible. This user is not in any project-specific groups.
 
 **Test as teamuser1 (ose-teamed-app member):**
 
 [source,bash,role="execute"]
 ----
 oc login -u teamuser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify
-oc get projects
+oc whoami
+----
+
+[source,bash,role="execute"]
+----
+oc get projects | grep app-
 ----
 
 Now you see:
@@ -570,11 +601,15 @@ Navigate to: **User Management → Users**
 
 You'll see all users who have logged in, their identities, and associated groups.
 
+image::ldap-users-detail.png[User Management showing LDAP users with identities]
+
 **View groups in console:**
 
 Navigate to: **User Management → Groups**
 
 Shows all synced LDAP groups and their members.
+
+image::ldap-groups-detail.png[User Management showing synced LDAP groups with member counts]
 
 **View role bindings in console:**
 
@@ -700,10 +735,10 @@ oc delete group ose-fancy-dev ose-normal-dev ose-teamed-app ose-user --ignore-no
 oc adm policy remove-cluster-role-from-user cluster-admin fancyuser1 2>/dev/null || true
 oc adm policy remove-cluster-role-from-group cluster-reader ose-fancy-dev 2>/dev/null || true
 
-# Remove test projects
-oc delete project app-dev app-test app-prod --ignore-not-found
-
-# Wait for OAuth rollout
-oc rollout status deployment/oauth-openshift -n openshift-authentication
-echo "Cleanup complete — OAuth restored to htpasswd only"
+# Remove test projects and wait for OAuth rollout in the background
+(
+  oc delete project app-dev app-test app-prod --ignore-not-found
+  oc rollout status deployment/oauth-openshift -n openshift-authentication --timeout=120s
+) &>/dev/null &
+echo "Cleanup running in background — OAuth restoring to htpasswd only. You can continue to the next module."
 ----

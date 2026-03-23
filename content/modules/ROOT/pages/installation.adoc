@@ -283,6 +283,8 @@ with --to-image or wait for new updates to be available.
 
 In the **OCP Console**, navigate to **Administration -> Cluster Settings**. The **Details** tab shows the current version, update channel, and — when updates are available — a visual upgrade path graph showing the route from your current version to available targets. This is far more informative than the CLI text output for planning upgrades.
 
+image::installation-images/cluster-settings-update.png[Cluster Settings Details tab showing version and update channel]
+
 **Key takeaway:** Operators manage cluster updates. When updates are available, you can upgrade with a single command: `oc adm upgrade --to=<version>`
 
 == Step 3: Verify Node Health and Resources
@@ -310,6 +312,8 @@ NOTE: Node names and count vary by platform. This workshop uses a 3-node compact
 * **STATUS = Ready** - Node is healthy and can schedule pods
 
 Check actual resource usage on nodes. In the **OCP Console**, navigate to **Compute -> Nodes** — each node shows CPU and memory utilisation as colour-coded bar graphs. Click any node to see time-series graphs showing usage trends. This is more useful than a point-in-time snapshot for capacity planning.
+
+image::installation-images/compute-nodes.png[Compute Nodes view showing CPU and memory bar graphs per node]
 
 You can also check via CLI:
 

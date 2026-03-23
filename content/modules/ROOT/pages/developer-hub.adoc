@@ -352,15 +352,19 @@ This takes 2-3 minutes as the init container installs the dynamic plugins before
 
 The Kubernetes plugin discovers pods by matching a label on the workloads to the `backstage.io/kubernetes-id` annotation on the catalog component. Label the weather app deployments:
 
+NOTE: This step requires the weather app deployments from the **Debugging & Troubleshooting** module to be running in `ops-track-demo`. If you haven't completed that module, you can skip this step — the catalog entry will still register, the Kubernetes tab will simply show no pods.
+
 [source,bash,role="execute"]
 ----
 for dep in weather-api weather-backend weather-cache weather-frontend weather-proxy; do
   oc patch deployment $dep -n ops-track-demo --type=json \
-    -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"weather-app"}]'
+    -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"weather-app"}]' 2>/dev/null
 done
 ----
 
 === Step 6: See It in Action
+
+IMPORTANT: You must **reload the Developer Hub tab** at the top of Showroom for the newly enabled plugins to appear. Click the reload button (circular arrow) next to the Developer Hub tab, or close and reopen it. Without reloading, the Kubernetes and Topology tabs will not be visible.
 
 Go back to the **Developer Hub** tab and click on **weather-app** in the catalog. You should now see:
 

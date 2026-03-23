@@ -436,6 +436,8 @@ You'll see **hundreds of operators** available out of the box.
 4. Filter by **Type** and select **Operators** to see the full list of available operators
 5. Feel free to click any operator tile to browse its details — this is just for exploration, no need to install anything
 
+image::software-catalog-operators.png[Software Catalog filtered to Operators showing available operator tiles]
+
 Install enterprise-grade software with **one click**.
 
 **In Kubernetes:** Each requires manual Helm charts, custom manifests, and configuration.

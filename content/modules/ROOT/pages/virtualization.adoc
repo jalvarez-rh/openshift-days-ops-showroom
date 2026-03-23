@@ -223,6 +223,8 @@ VM metrics flow into the same Prometheus stack as your containers — one dashbo
 
 In the Fleet Virtualization perspective, click **rhel9-vm** → **Metrics** tab to see:
 
+image::virt-metrics-tab.png[VM Metrics tab showing CPU memory and network I/O graphs]
+
 * CPU usage over time
 * Memory consumption
 * Network I/O
@@ -296,7 +298,7 @@ Trigger a live migration:
 virtctl migrate rhel9-vm
 ----
 
-In the **Fleet Virtualization** console, click **rhel9-vm** and watch the **Migrations** tab — it shows migration progress with phases (Scheduling → TargetReady → Running → Succeeded). The **Overview** tab updates the node name when the migration completes.
+The migration completes quickly — typically within a few seconds. The **Overview** tab updates the node name when it finishes.
 
 You can also watch via CLI:
 
@@ -465,14 +467,17 @@ Press `Ctrl+C` when `Running`. The VM's disk and configuration are now back to t
 
 == Cleanup
 
+Deleting VM disks and namespaces takes a couple of minutes. This runs in the background so you can move on to the next module immediately.
+
 [source,bash,role="execute"]
 ----
-# Stop VMs, then delete the namespace (removes all VMs, snapshots, clones, services)
-virtctl stop rhel9-vm -n vm-demo 2>/dev/null || true
-virtctl stop rhel9-vm-clone -n vm-demo 2>/dev/null || true
-oc delete namespace vm-demo --ignore-not-found
-
-echo "Cleanup complete"
+(
+  virtctl stop rhel9-vm -n vm-demo 2>/dev/null || true
+  virtctl stop rhel9-vm-clone -n vm-demo 2>/dev/null || true
+  sleep 10
+  oc delete namespace vm-demo --ignore-not-found --wait=false
+) &>/dev/null &
+echo "Cleanup running in background — you can continue to the next module"
 ----
 
 == Additional Resources

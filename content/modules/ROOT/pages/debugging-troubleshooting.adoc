@@ -78,6 +78,8 @@ NOTE: You might notice `weather-cache` is missing from the pod list — that's o
 
 In the **OCP Console**, click on the `weather-frontend` pod. The **Events** tab at the bottom shows the error with colour-coded severity — you'll see the image pull failure immediately.
 
+image::debugging-frontend-events.png[weather-frontend pod Events tab showing ImagePullBackOff error]
+
 You can also check via CLI:
 
 [source,bash,role="execute"]
@@ -123,6 +125,8 @@ You should see `1/1 Running`.
 === Diagnose
 
 The pod keeps starting and crashing. In the **OCP Console**, click the `weather-api` pod, then the **Logs** tab. The log viewer shows the error message with real-time streaming. If the pod has restarted, use the **Container** dropdown to select the previous container's logs.
+
+image::debugging-api-logs.png[weather-api pod Logs tab showing missing config file error]
 
 You can also check via CLI:
 
@@ -173,6 +177,8 @@ You should see `1/1 Running`.
 === Diagnose
 
 You may have noticed `weather-cache` doesn't appear in the pod list at all. In the **OCP Console**, navigate to **Workloads -> Deployments** (project: `ops-track-demo`) and click `weather-cache`. The **Events** tab immediately shows the `FailedCreate` error explaining why no pod was created.
+
+image::debugging-cache-deployment-events.png[weather-cache deployment Events showing FailedCreate due to LimitRange violation]
 
 Let's also check via CLI:
 
@@ -296,6 +302,8 @@ CACHE_TTL=300
 
 This pod is `Running` — so what's wrong? In the **OCP Console**, navigate to **Networking -> Services** (project: `ops-track-demo`) and click `weather-proxy`. The **Pods** tab shows **0 Pods** — immediately revealing that the service can't find any matching pods.
 
+image::debugging-proxy-service-no-pods.png[weather-proxy Service showing 0 Pods due to selector mismatch]
+
 Check via CLI as well:
 
 [source,bash,role="execute"]
@@ -337,6 +345,8 @@ You should now see the pod's IP in the `ENDPOINTS` column. Traffic will flow to 
 == All Fixed
 
 Switch to the **OCP Console** tab — **Workloads -> Pods** (project: `ops-track-demo`). All five pods should now show green `Running` status. Compare this to the red/orange/yellow view you saw at the start — that visual progression is the troubleshooting workflow in action.
+
+image::debugging-all-fixed.png[All five weather pods showing green Running status]
 
 Verify via CLI:
 
@@ -402,3 +412,14 @@ You diagnosed and fixed five common OpenShift issues:
 * **Service selector mismatch** — typo in selector → `oc patch svc`
 
 The pattern is always the same: **check status → describe pod/replicaset → read logs/events → fix → verify.**
+
+== Cleanup
+
+NOTE: If the **Developer Hub** module is part of your workshop, **skip this cleanup** — it uses the weather app pods in `ops-track-demo` to demonstrate the Kubernetes plugin.
+
+[source,bash,role="execute"]
+----
+oc delete namespace ops-track-demo --ignore-not-found
+
+echo "Cleanup complete"
+----
