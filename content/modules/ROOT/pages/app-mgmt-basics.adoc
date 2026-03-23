@@ -138,7 +138,7 @@ Each pod's IP is listed as an endpoint. When a new pod starts, it's automaticall
 
 == Self-Healing
 
-One of the core advantages of OpenShift over traditional VMs: when a pod dies, OpenShift automatically replaces it. Let's see this in action.
+When a pod dies, OpenShift automatically replaces it. Let's see this in action.
 
 Start watching pods, then delete one — you'll see every status transition in real-time:
 
@@ -154,7 +154,7 @@ Press `Ctrl+C` when you see the replacement pod reach `Running`.
 
 TIP: You can also watch this in the **OCP Console** at **Workloads -> Pods** (project: `app-management`). The console shows pod status transitions in real-time with colour-coded indicators.
 
-**The Deployment controller** detected that the actual state (2 pods) didn't match the desired state (3 pods) and created a replacement. This happens in seconds, with no manual intervention. This is why OpenShift can maintain SLAs that are difficult with traditional VM-based deployments.
+**The Deployment controller** detected that the actual state (2 pods) didn't match the desired state (3 pods) and created a replacement. This happens in seconds, with no manual intervention.
 
 == Application Probes
 
