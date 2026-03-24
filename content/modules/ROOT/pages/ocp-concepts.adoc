@@ -51,7 +51,6 @@ OpenShift builds on Kubernetes and adds the operational tooling that production 
 * Tekton Pipelines
 * RHACS security scanning
 * Single vendor support for the entire stack
-|===
 
 === 2. Full-Featured Web Console
 
