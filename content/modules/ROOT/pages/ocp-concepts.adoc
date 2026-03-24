@@ -327,6 +327,8 @@ oc scale machineset.machine.openshift.io <machineset-name> --replicas=1 -n opens
 
 OpenShift automatically provisions a compute instance, configures it, and joins it to the cluster — one command to scale your infrastructure.
 
+NOTE: This workshop environment runs on bare metal without spare hosts available, so scaling is shown as an example rather than a live exercise. On cloud platforms (AWS, Azure, GCP), the Machine API provisions new instances automatically.
+
 == Over-the-Air Upgrades
 
 Check the cluster version:
