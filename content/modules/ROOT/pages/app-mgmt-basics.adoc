@@ -56,14 +56,14 @@ Click the route URL to see the WeatherNow app in your browser:
 
 image::app-mgmt-weathernow-app.png[WeatherNow application showing weather data]
 
-Check the pod is running:
+Now switch to the terminal to see the same information via CLI:
 
 [source,bash,role="execute"]
 ----
 oc get pods -n app-management
 ----
 
-You should see one pod in `Running` status. You can also see your pod in the **OCP Console** at **Workloads -> Pods** (project: `app-management`). Click the pod name to see details, logs, events, and resource usage — all in one view.
+You should see one pod in `Running` status — the same pod you just saw in the Topology view.
 
 == Inspect Your Application
 
