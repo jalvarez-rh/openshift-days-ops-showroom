@@ -38,23 +38,21 @@ image::app-mgmt-deploy-menu.png[Add menu showing Container images option]
 * Wait for the image to show **Validated**
 * Ensure **Select project** is set to `app-management`
 * Set the **Name** to `weathernow`
+* Scroll down and **uncheck** the **Create a route** checkbox. OpenShift can create a route for you automatically, but we want to do it ourselves so you understand how routing works.
++
+image::app-mgmt-uncheck-route.png[Create a route checkbox unchecked]
 * Click **Create**
 +
 image::app-mgmt-deploy-image.png[Deploy Image form with weathernow image validated]
 
-This creates three resources:
+This creates two resources:
 
 * **Deployment** — defines what container to run and how many replicas
 * **Service** — internal load balancer that routes traffic to the pods
-* **ImageStream** — tracks the container image
 
-You'll be taken to the Topology view where you can see the application deployed:
+You'll be taken to the Topology view. Notice the pod is running and the service is created, but under **Routes** it says "No Routes found for this resource" — the application isn't accessible from outside the cluster yet.
 
-image::app-mgmt-deploy-topology.png[Topology view showing weathernow application running]
-
-Click the route URL to see the WeatherNow app in your browser:
-
-image::app-mgmt-weathernow-app.png[WeatherNow application showing weather data]
+image::app-mgmt-deploy-no-route.png[Topology view showing weathernow with no route]
 
 Now switch to the terminal to see the same information via CLI:
 
@@ -123,7 +121,13 @@ Test it:
 curl -sk https://$(oc get route weathernow -n app-management -o jsonpath='{.spec.host}') | head -5
 ----
 
-Your application is now accessible from outside the cluster.
+Your application is now accessible from outside the cluster. Back in the Topology view, you'll see the route icon has appeared on the application:
+
+image::app-mgmt-deploy-topology.png[Topology view showing weathernow application with route]
+
+Click the route URL to see the WeatherNow app in your browser:
+
+image::app-mgmt-weathernow-app.png[WeatherNow application showing weather data]
 
 == Scale the Application
 
