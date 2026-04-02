@@ -27,16 +27,34 @@ Create a project and deploy a web server:
 oc new-project app-management
 ----
 
-[source,bash,role="execute"]
-----
-oc new-app --name=weathernow --image=registry.access.redhat.com/ubi9/httpd-24
-----
+Now deploy the WeatherNow application using the OpenShift Console.
 
-This single command creates three resources:
+. In the top-right corner of the console, click the **+** (Add) button and select **Container images**:
++
+image::app-mgmt-deploy-menu.png[Add menu showing Container images option]
+
+. In the **Deploy Image** form:
+* Select **Image name from external registry** and enter: `quay.io/openshift-workshop-applications/weathernow:latest`
+* Wait for the image to show **Validated**
+* Ensure **Select project** is set to `app-management`
+* Set the **Name** to `weathernow`
+* Click **Create**
++
+image::app-mgmt-deploy-image.png[Deploy Image form with weathernow image validated]
+
+This creates three resources:
 
 * **Deployment** — defines what container to run and how many replicas
 * **Service** — internal load balancer that routes traffic to the pods
 * **ImageStream** — tracks the container image
+
+You'll be taken to the Topology view where you can see the application deployed:
+
+image::app-mgmt-deploy-topology.png[Topology view showing weathernow application running]
+
+Click the route URL to see the WeatherNow app in your browser:
+
+image::app-mgmt-weathernow-app.png[WeatherNow application showing weather data]
 
 Check the pod is running:
 

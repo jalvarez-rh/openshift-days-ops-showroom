@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: weathernow
-        image: quay.io/openshifttest/hello-openshift:1.2.0
+        image: quay.io/openshift-workshop-applications/weathernow:latest
         ports:
         - containerPort: 8080
 ---
