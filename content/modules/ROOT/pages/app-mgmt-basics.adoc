@@ -114,20 +114,15 @@ Check the route:
 oc get route weathernow -n app-management
 ----
 
-Test it:
-
-[source,bash,role="execute"]
-----
-curl -sk https://$(oc get route weathernow -n app-management -o jsonpath='{.spec.host}') | head -5
-----
-
-Your application is now accessible from outside the cluster. Back in the Topology view, you'll see the route icon has appeared on the application:
+Now go back to the **Topology view** in the console. You'll see the route icon has appeared on the application:
 
 image::app-mgmt-deploy-topology.png[Topology view showing weathernow application with route]
 
-Click the route URL to see the WeatherNow app in your browser:
+Click the route URL to open the WeatherNow app in your browser:
 
 image::app-mgmt-weathernow-app.png[WeatherNow application showing weather data]
+
+Your application is now accessible from outside the cluster.
 
 == Scale the Application
 
