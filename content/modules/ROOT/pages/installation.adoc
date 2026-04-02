@@ -6,146 +6,36 @@
 **Format:** Hands-on verification +
 **Audience:** Platform Engineers, Operations Teams, Cluster Administrators
 
-**Narrative Context:**
+_You've learned about OpenShift's architecture and value. Now let's verify a cluster is healthy and ready for workloads._
 
-You've learned about OpenShift's architecture and value. Now let's verify a cluster is **healthy and ready for workloads**.
+_These are the same checks you'd perform after installation, after upgrades, during troubleshooting, or as part of regular health monitoring._
 
-As an operations team, you'll perform these checks:
-- After initial installation
-- After upgrades
-- During troubleshooting
-- As part of regular health monitoring
-
-== Learning Objectives
+=== Learning Objectives
 
 By the end of this module, you will be able to:
 
-* Understand OpenShift installation methods (IPI, UPI, Agent-based, Assisted)
 * Verify cluster health using ClusterOperators
 * Understand upgrade channels and available updates
 * Verify node configuration with MachineConfigPools
 * Validate networking and storage functionality
 * Check etcd health for control plane stability
 
-== Understanding OpenShift Architecture
+== About This Cluster
 
-Before verifying health, understand the key components:
+This workshop cluster is pre-provisioned using **Installer-Provisioned Infrastructure (IPI)** — OpenShift fully automated the provisioning of compute, network, storage, and DNS. The result is a production-ready 3-node compact cluster (combined control-plane and worker roles).
 
-**Control Plane** (3 nodes in traditional clusters):
+OpenShift supports multiple installation methods depending on your environment:
 
-* **API Server** - All cluster interactions go through the API
-* **etcd** - Distributed key-value store for cluster state
-* **Scheduler** - Decides which nodes run which pods
-* **Controller Managers** - Ensure desired state matches actual state
+* **IPI** — Full-stack automation for cloud (AWS, Azure, GCP) and on-premise (vSphere, bare metal)
+* **UPI** — You provision infrastructure, installer deploys OpenShift
+* **Agent-based / Assisted Installer** — Bootable ISO or web-based GUI for bare metal
+* **Managed offerings** — ROSA, ARO, OpenShift Dedicated (Red Hat and cloud providers handle operations)
 
-**Worker Nodes:**
+For details on installation planning and configuration, see the link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[OpenShift Installation Documentation].
 
-* Run application workloads
-* Execute kubelet (node agent)
-* Run container runtime
+TIP: Two things that cannot be changed after installation: the **pod network CIDR** and the **service network CIDR**. Plan these carefully — if they overlap with your corporate network, you'll need to rebuild the cluster.
 
-**Operators:**
-
-* Manage cluster components as software
-* Self-healing and automated updates
-* Each operator reports its own health
-
-**Key Concept:** In OpenShift 4+, the cluster manages itself using **Operators**. Verifying cluster health = verifying operator health.
-
-For detailed architecture information, see link:https://docs.openshift.com/container-platform/4.20/architecture/control-plane.html[Control Plane Architecture].
-
-== OpenShift Installation Methods
-
-Red Hat OpenShift provides multiple installation methods to meet different infrastructure and operational requirements.
-
-=== Installation Approaches
-
-Red Hat categorizes installations into two main approaches:
-
-**Full stack automation** - Installer provisions and configures infrastructure
-
-* **Installer-provisioned infrastructure (IPI)**: Cloud platforms (AWS, Azure, GCP, IBM Cloud) and select on-premise platforms (vSphere, bare metal with specific hardware)
-* **Agent-based Installer**: Bare metal and on-premise using bootable ISO with discovery
-* **Assisted Installer**: Web-based GUI at console.redhat.com for bare metal and on-premise
-
-**Pre-existing infrastructure** - You provision infrastructure, installer deploys OpenShift
-
-* **User-provisioned infrastructure (UPI)**: Any supported platform where you control infrastructure (on-premise, restricted networks, custom requirements)
-
-=== Supported Platforms
-
-OpenShift can be installed on:
-
-* **Public cloud**: AWS, Azure, GCP, IBM Cloud, Oracle Cloud Infrastructure (OCI)
-* **Private cloud**: VMware vSphere, Red Hat OpenStack Platform (RHOSP), Nutanix
-* **Bare metal**: Physical servers (via Assisted Installer or Agent-based Installer)
-* **Specialized platforms**: IBM Z, IBM LinuxONE, IBM Power
-
-**Managed OpenShift offerings** (ROSA, ARO, RHOIC, OpenShift Dedicated) provide fully-managed clusters where Red Hat and cloud providers handle installation and operations.
-
-=== This Workshop Cluster
-
-**This workshop cluster is pre-provisioned and ready for use**:
-
-* Installation method: Installer-provisioned infrastructure (IPI)
-* Infrastructure: Fully automated provisioning of compute, network, and storage
-* Result: Production-ready 3-node compact cluster (combined control-plane and worker roles)
-
-NOTE: The installation details are provided for educational purposes. Your focus in this workshop is on **Day 2 operations** - managing a running cluster.
-
-=== Installation Configuration (install-config.yaml)
-
-All installations start with an `install-config.yaml` defining the cluster:
-
-[source,yaml]
-----
-apiVersion: v1
-baseDomain: example.com
-metadata:
-  name: production-cluster
-platform:
-  # Platform-specific configuration (aws, azure, vsphere, baremetal, etc.)
-  ...
-controlPlane:
-  replicas: 3
-compute:
-- replicas: 3
-networking:
-  clusterNetwork:
-  - cidr: 10.128.0.0/14
-  serviceNetwork:
-  - 172.30.0.0/16
-pullSecret: '<pull-secret-from-console.redhat.com>'
-sshKey: 'ssh-rsa AAAA...'
-----
-
-**Key parameters operations teams care about:**
-
-* **controlPlane.replicas** - Always 3 for HA (etcd needs a quorum of 2, so 3 is the minimum for fault tolerance)
-* **compute.replicas** - Initial worker count (scale later with MachineSets — you'll see this in action)
-* **platform** - Platform-specific settings (instance types, regions, etc.)
-* **networking.clusterNetwork** - Pod IP range. **Cannot be changed after installation.** Plan this carefully — if it overlaps with your corporate network, pods can't reach those systems.
-* **networking.serviceNetwork** - Service IP range. **Also cannot be changed after installation.**
-
-IMPORTANT: The network CIDRs are permanent. If someone asks you to change them after the cluster is running, the answer is "rebuild the cluster." Get these right during planning.
-
-=== Installation Workflow
-
-The `openshift-install` command automates the entire installation:
-
-**Phase 1: Bootstrap** (0-10 min) - Temporary VM brings up initial control plane. If this phase hangs, it's almost always a DNS or DHCP problem.
-
-**Phase 2: Control Plane** (10-20 min) - 3 nodes boot, etcd cluster forms, API becomes available. This is when you can first run `oc` commands.
-
-**Phase 3: Workers & Operators** (20-45 min) - Workers join, all ~34 ClusterOperators deploy. The cluster isn't healthy until every operator reports `Available`.
-
-**IPI provisions**: Network infrastructure, load balancers (API + ingress), compute instances, storage, DNS (api.*, *.apps)
-
-**Prerequisites**: Infrastructure quota, service account permissions, DNS zone, OpenShift pull secret from console.redhat.com
-
-**Now let's verify this cluster is healthy and ready for workloads.**
-
-**More details:** See link:https://docs.openshift.com/container-platform/4.20/installing/index.html[OpenShift Installation Documentation].
+Now let's verify this cluster is healthy and ready for workloads.
 
 == Step 1: Verify Cluster Operators (Primary Health Check)
 
@@ -420,6 +310,6 @@ oc get clusteroperator monitoring
 
 == Additional Resources
 
-* **Installing OpenShift:** link:https://docs.openshift.com/container-platform/4.20/installing/index.html[Installation Documentation]
-* **Verifying Cluster Status:** link:https://docs.openshift.com/container-platform/4.20/support/troubleshooting/verifying-cluster-status.html[Troubleshooting Guide]
-* **ClusterOperators Reference:** link:https://docs.openshift.com/container-platform/4.20/operators/operator-reference.html[Operator Reference]
+* **Installing OpenShift:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[Installation Documentation]
+* **Verifying Cluster Status:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/support/troubleshooting#verifying-node-health[Troubleshooting Guide]
+* **ClusterOperators Reference:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/operators/operator-reference[Operator Reference]

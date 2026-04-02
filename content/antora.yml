@@ -14,7 +14,7 @@ asciidoc:
     ssh_password: ''
     ssh_command: ''
     page-links:
-    - url: https://docs.openshift.com
+    - url: https://docs.redhat.com/en/documentation/openshift_container_platform/4.20
       text: OpenShift Docs
     - url: https://access.redhat.com
       text: Red Hat Customer Portal
