@@ -212,7 +212,7 @@ Clean up:
 
 [source,bash,role="execute"]
 ----
-oc delete project install-test
+oc delete project install-test &>/dev/null &
 ----
 
 == Step 5: Test Storage Provisioning
