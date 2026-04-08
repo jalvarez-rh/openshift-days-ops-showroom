@@ -285,7 +285,7 @@ Clean up:
 
 [source,bash,role="execute"]
 ----
-oc delete project storage-test
+oc delete project storage-test &>/dev/null &
 ----
 
 == Step 6: Verify etcd Health
