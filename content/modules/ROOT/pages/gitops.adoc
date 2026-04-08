@@ -1,0 +1,253 @@
+= GitOps - Declarative Cluster Management
+
+== Module Overview
+
+**Duration:** 20-25 minutes +
+**Format:** Hands-on +
+**Audience:** Platform Engineers, Operations Teams, SRE
+
+GitOps is a modern approach for managing infrastructure through Git. You define the desired state of your cluster in a Git repository, and a tool like ArgoCD continuously monitors and syncs the cluster to match. If someone makes a manual change, ArgoCD detects the drift and can automatically restore the correct state.
+
+As an OpenShift administrator, this means you can manage operators, cluster configuration, and application deployments across multiple clusters from a single source of truth in Git.
+
+== Learning Objectives
+
+By the end of this module, you will be able to:
+
+* Access and navigate the ArgoCD interface
+* Deploy an operator using GitOps instead of manual installation
+* Manage cluster configuration declaratively through Git
+* Observe how ArgoCD detects drift when someone makes manual changes
+* Resync resources to restore the desired state from Git
+
+== Understanding GitOps on OpenShift
+
+OpenShift GitOps uses link:https://argo-cd.readthedocs.io/en/stable/[ArgoCD] to implement the GitOps workflow:
+
+1. **Define** desired state in a Git repository (YAML manifests, Kustomize, Helm)
+2. **Sync** ArgoCD watches the repo and applies changes to the cluster
+3. **Detect** ArgoCD compares the live cluster state against Git
+4. **Reconcile** if drift is detected, ArgoCD can alert or auto-heal
+
+This approach gives you an audit trail (Git history), easy rollback (Git revert), and consistency across environments.
+
+== Step 1: Access ArgoCD
+
+OpenShift GitOps is already installed on your cluster. The ArgoCD instance is running in the `openshift-gitops` namespace.
+
+**Find ArgoCD in the console:**
+
+Look for the grid icon (nine tiles) in the top navigation bar of the OpenShift console and select **OpenShift GitOps Cluster Argo CD**.
+
+If prompted about a certificate warning, proceed using the advanced options.
+
+**Log in via OpenShift:**
+
+Select **Log in via OpenShift** and use your admin credentials:
+
+* *Username*: `{openshift_cluster_admin_username}`
+* *Password*: `{openshift_cluster_admin_password}`
+
+Authorise access when prompted. You should now see the ArgoCD dashboard.
+
+**Verify from the CLI:**
+
+[source,bash,role="execute"]
+----
+oc get pods -n openshift-gitops
+----
+
+You should see several pods running including the ArgoCD server, application controller, repo server, and Redis.
+
+[source,bash,role="execute"]
+----
+oc get route openshift-gitops-server -n openshift-gitops -o jsonpath='{.spec.host}'
+----
+
+This is the URL for the ArgoCD UI.
+
+== Step 2: Deploy an Operator Using GitOps
+
+Instead of manually installing operators through the OperatorHub, you can define them as manifests in Git and let ArgoCD handle the installation. This ensures every cluster in your fleet gets the same operators with the same configuration.
+
+We will deploy the **OpenShift Pipelines** operator using a Git repository that contains the Subscription and namespace manifests.
+
+**Create the ArgoCD Application:**
+
+[source,bash,role="execute"]
+----
+cat <<'EOF' | oc apply -f -
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pipelines
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: openshift-operators
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: support/gitops/pipelines/
+    repoURL: 'https://github.com/rhpds/openshift-days-ops-showroom/'
+    targetRevision: main
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+EOF
+----
+
+**Watch ArgoCD sync the application:**
+
+Switch back to the ArgoCD UI. You should see the `pipelines` application appear. Click on it to see the resources being created.
+
+If it shows "OutOfSync", click **Sync** and then **Synchronize** to trigger the initial sync.
+
+**Verify in the OpenShift console:**
+
+Navigate to **Operators -> Installed Operators**. You should see **Red Hat OpenShift Pipelines** listed as Succeeded. ArgoCD installed it by applying the Subscription manifest from Git.
+
+TIP: You can also verify from the CLI:
+
+[source,bash,role="execute"]
+----
+oc get csv -n openshift-operators | grep pipelines
+----
+
+**Understanding the Application properties:**
+
+|===
+|*Field* |*Purpose*
+
+|**Project** | Organisational unit within ArgoCD for grouping applications and access control
+|**Repository** | Git repo containing the desired state manifests
+|**Target Revision** | Branch, tag, or commit to deploy from
+|**Path** | Directory within the repo containing the manifests
+|**Destination** | Target cluster and namespace for deployment
+|**Sync Policy** | Whether ArgoCD syncs automatically or requires manual approval
+|===
+
+== Step 3: Manage Cluster Configuration via GitOps
+
+Beyond operators, GitOps is ideal for managing cluster-wide configuration. Let's deploy a console banner — a `ConsoleNotification` resource that displays a message at the top of the OpenShift console.
+
+**Create the banner application in ArgoCD:**
+
+[source,bash,role="execute"]
+----
+cat <<'EOF' | oc apply -f -
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: banner
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: openshift-gitops
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: support/gitops/banner/
+    repoURL: 'https://github.com/rhpds/openshift-days-ops-showroom/'
+    targetRevision: main
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+EOF
+----
+
+**Check the OpenShift console** — you should see a blue banner at the top of the page with a congratulations message.
+
+**Verify the resource from CLI:**
+
+[source,bash,role="execute"]
+----
+oc get consolenotification
+----
+
+You should see:
+
+----
+NAME          TEXT                                                                  LOCATION   AGE
+home-banner   Congratulations, you have successfully created a banner using ArgoCD! BannerTop  ...
+----
+
+== Step 4: Observe Drift Detection
+
+One of the most powerful features of GitOps is drift detection. Let's simulate someone making an unauthorised manual change and see how ArgoCD responds.
+
+**Make a manual change to the banner:**
+
+[source,bash,role="execute"]
+----
+oc patch consolenotification home-banner -p '{"spec":{"text":"oops somebody changed this!"}}' --type=merge
+----
+
+**Check the OpenShift console** — the banner text has changed to "oops somebody changed this!"
+
+**Check ArgoCD** — go back to the ArgoCD UI. The `banner` application should now show **OutOfSync**. ArgoCD detected that the live cluster state no longer matches what's in Git.
+
+**View the diff:**
+
+Click on the `banner` application, then click on the `home-banner` resource and select **Diff**. You'll see:
+
+* **Green** — the original text from Git (desired state)
+* **Red** — the manual change (actual state)
+
+This visual diff makes it easy to see exactly what changed and who deviated from the source of truth.
+
+== Step 5: Resync to Desired State
+
+Now restore the banner to its correct state from Git.
+
+**Resync the application:**
+
+In ArgoCD, click **Sync** on the `banner` application, then click **Synchronize**.
+
+**Verify the fix:**
+
+Check the OpenShift console — the banner should be back to "Congratulations, you have successfully created a banner using ArgoCD!"
+
+[source,bash,role="execute"]
+----
+oc get consolenotification home-banner -o jsonpath='{.spec.text}'
+----
+
+The cluster is back in sync with Git.
+
+== GitOps Beyond This Lab
+
+In production, GitOps is used for much more than banners:
+
+* **Operator management** — ensure the same operators and versions across all clusters
+* **RBAC configuration** — manage ClusterRoles and RoleBindings through Git
+* **Cluster policies** — enforce network policies, security contexts, and quotas
+* **Application delivery** — deploy applications consistently across dev, staging, and production
+* **Self-healing** — enable ArgoCD's self-heal to automatically revert manual changes
+
+With **self-heal** enabled, ArgoCD would have automatically reverted the banner change without any manual intervention. You can enable this under the application's sync policy settings.
+
+For more information, see link:https://docs.redhat.com/en/documentation/red_hat_openshift_gitops/1.19/html/understanding_openshift_gitops/index[Understanding OpenShift GitOps].
+
+== Summary
+
+**What you accomplished:**
+
+* Accessed the pre-deployed ArgoCD instance via the OpenShift console
+* Deployed the Pipelines operator entirely through GitOps instead of manual OperatorHub installation
+* Managed cluster configuration (console banner) declaratively from a Git repository
+* Observed ArgoCD detect drift when someone made a manual change
+* Resynced to restore the desired state from Git
+
+**Key takeaway:** GitOps provides an audit trail, easy rollback, and consistent configuration across clusters. Everything is in Git — if it's not in Git, it shouldn't be on the cluster.
+
+== Cleanup
+
+[source,bash,role="execute"]
+----
+oc delete application pipelines banner -n openshift-gitops --ignore-not-found
+oc delete consolenotification home-banner --ignore-not-found
+echo "GitOps cleanup complete"
+----

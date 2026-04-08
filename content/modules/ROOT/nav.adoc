@@ -34,6 +34,9 @@ endif::[]
 ifeval::["{module_enable_debugging}" == "true"]
 * xref:debugging-troubleshooting.adoc[Debugging & Troubleshooting]
 endif::[]
+ifeval::["{module_enable_gitops}" == "true"]
+* xref:gitops.adoc[GitOps - Declarative Cluster Management]
+endif::[]
 
 // Identity & Access
 ifeval::["{module_enable_ldap}" == "true"]
