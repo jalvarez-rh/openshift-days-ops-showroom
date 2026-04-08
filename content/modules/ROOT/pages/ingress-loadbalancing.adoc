@@ -288,7 +288,7 @@ Watch the new router pod come up:
 oc get pods -n openshift-ingress -w
 ----
 
-Press `Ctrl+C` when you see 3 pods running.
+Press `Ctrl+C` when you see 4 pods running.
 
 === View Ingress Controller Status
 
