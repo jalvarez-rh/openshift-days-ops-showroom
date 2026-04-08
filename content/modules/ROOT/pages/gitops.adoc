@@ -355,8 +355,10 @@ For more information, see link:https://docs.redhat.com/en/documentation/red_hat_
 
 [source,bash,role="execute"]
 ----
-oc delete application.argoproj.io managed-project -n openshift-gitops --ignore-not-found
-oc delete appproject workshop -n openshift-gitops --ignore-not-found
-oc delete namespace gitops-managed-project --ignore-not-found
-echo "GitOps cleanup complete"
+(
+  oc delete application.argoproj.io managed-project -n openshift-gitops --ignore-not-found
+  oc delete appproject workshop -n openshift-gitops --ignore-not-found
+  oc delete namespace gitops-managed-project --ignore-not-found
+) &>/dev/null &
+echo "Cleanup running in background — you can continue to the next module."
 ----
