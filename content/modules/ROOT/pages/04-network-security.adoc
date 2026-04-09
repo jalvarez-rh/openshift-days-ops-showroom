@@ -1,42 +1,17 @@
 = Network Security
 
-== Module Overview
-
 **Duration:** 30 minutes +
-**Format:** Hands-on network security configuration +
-**Audience:** Platform Engineers, Network Administrators, Security Teams
+**Format:** Hands-on network security configuration
 
-**Narrative Context:**
+== The Scenario
 
-Your applications are receiving traffic through the Ingress Controller. Now you need to secure the network layer:
+Your apps are receiving traffic — but by default, every pod can talk to every other pod, and any pod can reach the internet. That's not production-ready.
 
-- Control pod-to-pod communication
-- Restrict outbound traffic to external systems
-- Configure predictable source IPs for external firewalls
-- Understand OpenShift's software-defined networking
+In this module you'll lock things down: implement NetworkPolicy to isolate pods, configure EgressFirewall to control outbound traffic, and set up EgressIP for predictable source IPs that external firewalls can whitelist.
 
-== Learning Objectives
+== OpenShift Networking
 
-By the end of this module, you will be able to:
-
-* Understand OpenShift's OVN-Kubernetes software-defined network
-* Implement NetworkPolicy for pod-to-pod security
-* Configure EgressFirewall to control outbound traffic
-* Use EgressIP for predictable source IPs
-* Troubleshoot network connectivity issues
-
-== OpenShift Networking Architecture
-
-OpenShift uses **OVN-Kubernetes** as the default network plugin. OVN-Kubernetes became the default for new installations in OpenShift 4.12 and is the only supported network plugin in OpenShift 4.20.
-
-**What OVN-Kubernetes provides:**
-
-* Pod-to-pod networking across nodes
-* Network isolation with NetworkPolicy
-* Egress traffic control (EgressFirewall, EgressIP)
-* IPsec encryption (optional)
-* Hardware offloading support
-* Integration with cloud provider load balancers
+OpenShift uses **OVN-Kubernetes** as its network plugin (the only supported option in 4.20). It handles pod networking, network isolation via NetworkPolicy, egress traffic control, and optional IPsec encryption.
 
 === View Cluster Network Configuration
 
