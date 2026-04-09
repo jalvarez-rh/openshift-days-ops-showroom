@@ -1,75 +1,17 @@
 = Platform Engineering - Red Hat Developer Hub
 
-== Module Overview
-
 **Duration:** 30 minutes +
-**Format:** Dashboard exploration + Demo +
-**Audience:** IT Operations, Platform Engineers, Infrastructure Architects
+**Format:** Dashboard exploration + Hands-on configuration
 
-**Workshop Narrative Context:**
+== The Problem
 
-We've learned how to:
-- Secure workloads with RHACS
-- Enforce governance policies
-- Monitor compliance
+How many times a week does someone message you: _"Is my app running?"_ or _"Can you create me a namespace with CI/CD?"_
 
-**Now:** How do we **enable developer self-service** while maintaining operational control? How do we reduce repetitive requests and tickets?
+Red Hat Developer Hub (RHDH) is a developer portal based on Backstage. You register your services in a catalog, enable plugins that show live cluster data, and developers stop asking you questions they can answer themselves.
 
-== Learning Objectives
+In this module you'll deploy it, register applications, and wire up the Kubernetes plugin so the catalog shows real-time pod status — no `oc` access required for developers.
 
-By the end of this module, you will be able to:
-
-* Understand what Red Hat Developer Hub (RHDH) is and how it fits into platform operations
-* Verify RHDH deployment health and status
-* Navigate RHDH resources in OpenShift console and CLI
-* Enable dynamic plugins to extend RHDH functionality
-* Connect the software catalog to live cluster resources
-
-== What is Red Hat Developer Hub?
-
-**Red Hat Developer Hub (RHDH)** is an **enterprise-grade Internal Developer Platform** based on Backstage.
-
-Think of it as: **Your organization's developer self-service portal**
-
-=== The Operations Problem It Solves
-
-**Before RHDH:**
-
-* Developers submit tickets: "Create me a new app with CI/CD"
-* Ops manually provisions: namespace, RBAC, quotas, pipeline, git repo
-* Process takes days or weeks
-* Inconsistent configurations
-* Documentation scattered everywhere
-
-**With RHDH:**
-
-* Developer clicks "Create New App" in portal
-* Template automatically provisions: namespace, RBAC, quotas, pipeline, git repo
-* Process takes minutes
-* **Ops-defined golden paths** ensure consistency
-* Self-service with governance built-in
-
-=== Key Capabilities
-
-* **Software Catalog** - Unified view of all services, APIs, libraries
-* **Software Templates** - Self-service app creation with Ops-approved patterns
-* **TechDocs** - Documentation integrated with code
-* **Plugins** - Integrate with tools (ArgoCD, Tekton, Jira, etc.)
-* **RBAC** - Fine-grained access control
-* **API Integration** - Connect to existing systems
-
-== RHDH Architecture (Quick Overview)
-
-RHDH on OpenShift consists of:
-
-* **Backstage Frontend** - Web portal UI
-* **Backstage Backend** - API and orchestration layer
-* **PostgreSQL Database** - Stores catalog and configuration
-* **Plugins** - Extend functionality (Kubernetes, Tekton, ArgoCD, etc.)
-
-All of this was deployed via the **Red Hat Developer Hub Operator** from OperatorHub.
-
-== Hands-On: Verify RHDH Deployment
+== Verify RHDH Deployment
 
 === Step 1: Check RHDH Pods
 
