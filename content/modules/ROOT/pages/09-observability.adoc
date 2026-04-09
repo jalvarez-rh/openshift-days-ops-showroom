@@ -136,21 +136,46 @@ Verify the rule was created:
 oc get prometheusrule ops-track-alerts -n openshift-monitoring
 ----
 
-Navigate to **Observe -> Alerting -> Alerting Rules** in the console. Search for `HighPodRestartRate` to find your custom rule:
+The rule exists but nothing is triggering it. Let's fix that — deploy a pod that crash-loops so you can see the alert go from inactive to pending to firing:
 
-NOTE: You may need to clear the **Source** filter to see all rules, or just search by name.
+[source,bash,role="execute"]
+----
+oc new-project alert-demo 2>/dev/null || oc project alert-demo
+cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crashloop-test
+  namespace: alert-demo
+spec:
+  containers:
+  - name: crash
+    image: registry.access.redhat.com/ubi9/ubi-minimal
+    command: ["/bin/sh", "-c", "echo 'Starting...'; sleep 2; exit 1"]
+  restartPolicy: Always
+EOF
+echo "Crash-looping pod deployed — it will restart every few seconds"
+----
+
+While the restarts accumulate, navigate to **Observe -> Alerting -> Alerting Rules** in the console and search for `HighPodRestartRate`:
 
 image::alerting-rules-search.png[Alerting Rules showing custom HighPodRestartRate rule]
 
-Click on the rule to see its details — the expression, severity, and any active alerts. If pods are restart-looping in the cluster, you'll see them here with a graph showing the trend:
+Click on the rule to see its details. After about 2 minutes (once the pod has restarted 3+ times and the `for: 1m` duration passes), you'll see the alert transition from **Inactive** → **Pending** → **Firing**:
 
 image::alerting-rule-detail.png[HighPodRestartRate rule detail showing expression and active alerts]
 
-Now switch to the **Alerts** tab (not Alerting Rules). Filter by **Alert State: Firing** to see what's currently active in the cluster:
+Now switch to the **Alerts** tab. Filter by **Alert State: Firing** — you should see `HighPodRestartRate` with `crashloop-test` as the source pod:
 
 image::alerts-firing.png[Alerts tab showing currently firing alerts with severity and state]
 
-This is the view on-call engineers live in — knowing how to read it matters more than knowing how to create rules.
+This is the view on-call engineers live in. You just created a rule, triggered it with a real failure, and watched it fire. Clean up the crash-looping pod:
+
+[source,bash,role="execute"]
+----
+oc delete pod crashloop-test -n alert-demo --ignore-not-found
+oc delete project alert-demo --ignore-not-found --wait=false &>/dev/null &
+----
 
 == Set Up the Logging Stack
 
@@ -193,9 +218,9 @@ spec:
 EOF
 ----
 
-Now install the operators from the Software Catalog.
+Install the Loki Operator from the Software Catalog — this is the same process for any operator in OperatorHub.
 
-==== Operator 1: Loki Operator (log storage)
+==== Loki Operator (log storage)
 
 1. Navigate to **Ecosystem -> Software Catalog**
 2. Search for **Loki Operator**
@@ -212,50 +237,83 @@ You'll see the "Installing Operator" confirmation:
 
 image::obs-loki-installing.png[Loki Operator installing confirmation]
 
-==== Operator 2: Red Hat OpenShift Logging (log collection)
+==== Remaining Operators
 
-1. Go back to **Ecosystem -> Software Catalog**
-2. Search for **OpenShift Logging**
-3. Click the **Red Hat OpenShift Logging** tile
-
-image::obs-logging-operator-details.png[Red Hat OpenShift Logging details with Install button highlighted]
-
-4. Click **Install**
-5. On the install configuration page, select **A specific namespace on the cluster** and verify the namespace is set to **openshift-logging**
-
-image::obs-logging-install-config.png[Logging install configuration with openshift-logging namespace selected]
-
-6. Click **Install**
-
-image::obs-logging-installing.png[Red Hat OpenShift Logging installing confirmation]
-
-==== Operator 3: Cluster Observability Operator (console UI)
-
-1. Go back to **Ecosystem -> Software Catalog**
-2. Search for **Cluster Observability Operator**
-3. Click the tile, then click **Install**
-4. Leave all defaults and click **Install**
-
-==== Verify All Operators
-
-Wait 2-3 minutes, then navigate to **Ecosystem -> Installed Operators** and select the **openshift-logging** project. You should see all operators showing **Succeeded**:
-
-image::obs-installed-operators.png[Installed Operators showing all logging operators with Succeeded status]
-
-You can also verify from CLI:
+You've seen how OperatorHub works. The remaining operators use the same process — let's script them:
 
 [source,bash,role="execute"]
 ----
-echo "Waiting for Loki operator..."
-until oc get csv -n openshift-operators-redhat 2>/dev/null | grep -q Succeeded; do sleep 10; done
-echo "Waiting for Cluster Logging operator..."
-until oc get csv -n openshift-logging 2>/dev/null | grep -q Succeeded; do sleep 10; done
-echo "Waiting for Cluster Observability operator..."
-until oc get csv -n openshift-operators 2>/dev/null | grep -q observability.*Succeeded; do sleep 10; done
-echo "All operators ready"
+cat <<EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cluster-logging
+  namespace: openshift-logging
+spec:
+  channel: stable-6.2
+  installPlanApproval: Automatic
+  name: cluster-logging
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: cluster-observability-operator
+  namespace: openshift-operators
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: cluster-observability-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: tempo-product
+  namespace: openshift-operators
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: tempo-product
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: opentelemetry-product
+  namespace: openshift-operators
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: opentelemetry-product
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+echo "Logging, COO, Tempo, and OpenTelemetry subscriptions created"
 ----
 
-**Do not proceed to the next step until all three show Succeeded** — the LokiStack and UIPlugin resources require the operator CRDs to be installed first.
+==== Verify All Operators
+
+[source,bash,role="execute"]
+----
+echo "Waiting for all 5 operators (this takes about a minute)..."
+TIMEOUT=300; ELAPSED=0
+while [ $ELAPSED -lt $TIMEOUT ]; do
+  READY=0
+  oc get csv -n openshift-operators-redhat 2>/dev/null | grep -q "loki.*Succeeded" && READY=$((READY+1))
+  oc get csv -n openshift-logging 2>/dev/null | grep -q "cluster-logging.*Succeeded" && READY=$((READY+1))
+  oc get csv -n openshift-operators 2>/dev/null | grep -q "observability.*Succeeded" && READY=$((READY+1))
+  oc get csv -n openshift-operators 2>/dev/null | grep -q "tempo.*Succeeded" && READY=$((READY+1))
+  oc get csv -n openshift-operators 2>/dev/null | grep -q "opentelemetry.*Succeeded" && READY=$((READY+1))
+  echo "  ${READY}/5 operators ready"
+  [ $READY -eq 5 ] && break
+  sleep 15; ELAPSED=$((ELAPSED+15))
+done
+[ $READY -eq 5 ] && echo "All operators installed" || echo "ERROR: Timed out — check Ecosystem -> Installed Operators"
+----
 
 === Configure Log Storage (Loki + S3)
 
@@ -284,28 +342,26 @@ Wait for the bucket to be provisioned:
 oc wait --for=jsonpath='{.status.phase}'=Bound obc/loki-bucket -n openshift-logging --timeout=60s
 ----
 
-Now extract the auto-generated S3 credentials and create a CA certificate ConfigMap so Loki can trust the NooBaa S3 endpoint's TLS certificate:
+Now extract the S3 credentials, create the CA cert ConfigMap, and deploy the LokiStack — all in one block so the variables stay in scope:
 
 [source,bash,role="execute"]
 ----
+# Extract S3 credentials from the bucket claim
 ACCESS_KEY=$(oc get secret loki-bucket -n openshift-logging -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 -d)
 SECRET_KEY=$(oc get secret loki-bucket -n openshift-logging -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d)
 BUCKET_NAME=$(oc get configmap loki-bucket -n openshift-logging -o jsonpath='{.data.BUCKET_NAME}')
 BUCKET_HOST=$(oc get configmap loki-bucket -n openshift-logging -o jsonpath='{.data.BUCKET_HOST}')
 DEFAULT_SC=$(oc get sc -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
 
+echo "Bucket: $BUCKET_NAME | Host: $BUCKET_HOST | SC: $DEFAULT_SC"
+
+# Create CA cert so Loki can trust the NooBaa S3 endpoint's TLS certificate
 oc get secret noobaa-s3-serving-cert -n openshift-storage \
   -o jsonpath='{.data.tls\.crt}' | base64 -d > /tmp/noobaa-ca.crt
 oc create configmap loki-s3-ca -n openshift-logging \
   --from-file=service-ca.crt=/tmp/noobaa-ca.crt
-----
 
-NOTE: The NooBaa S3 endpoint uses a cluster-internal service CA certificate. Without providing this CA to the LokiStack, the ingester would fail to write log chunks to S3 with a TLS verification error.
-
-Create the S3 credentials secret and the LokiStack:
-
-[source,bash,role="execute"]
-----
+# Create the S3 credentials secret and deploy LokiStack
 cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: Secret
@@ -369,7 +425,11 @@ Wait for the LokiStack gateway CA bundle to be created (the ClusterLogForwarder 
 [source,bash,role="execute"]
 ----
 echo "Waiting for LokiStack gateway CA bundle..."
-until oc get configmap logging-loki-gateway-ca-bundle -n openshift-logging 2>/dev/null; do sleep 5; done
+ELAPSED=0
+until oc get configmap logging-loki-gateway-ca-bundle -n openshift-logging 2>/dev/null; do
+  sleep 5; ELAPSED=$((ELAPSED+5))
+  [ $ELAPSED -ge 300 ] && echo "ERROR: Timed out waiting for CA bundle" && break
+done
 echo "CA bundle ready"
 ----
 
@@ -489,38 +549,7 @@ Metrics tell you *what* is happening. Logs tell you *why*. **Traces** tell you *
 
 Developers instrument their apps with OpenTelemetry SDKs, but ops teams own the tracing infrastructure — deploying the collector, managing the storage backend, and making traces visible in the console.
 
-=== Install the Operators
-
-You need two additional operators. The Cluster Observability Operator (already installed for logging) provides the console UI.
-
-==== Tempo Operator (trace storage)
-
-1. Navigate to **Ecosystem -> Software Catalog**
-2. Search for **Tempo Operator**
-3. Click the **Tempo Operator** tile (Red Hat)
-4. Click **Install**, leave all defaults, click **Install**
-
-image::otel-tempo-operator-install.png[Tempo Operator install page]
-
-==== Red Hat build of OpenTelemetry (trace collection)
-
-1. Go back to **Ecosystem -> Software Catalog**
-2. Search for **Red Hat build of OpenTelemetry**
-3. Click the tile, then **Install**
-4. Leave all defaults, click **Install**
-
-image::otel-opentelemetry-operator-install.png[Red Hat build of OpenTelemetry install page]
-
-Verify both operators are ready:
-
-[source,bash,role="execute"]
-----
-echo "Waiting for Tempo operator..."
-until oc get csv -A 2>/dev/null | grep -q "tempo.*Succeeded"; do sleep 10; done
-echo "Waiting for OpenTelemetry operator..."
-until oc get csv -A 2>/dev/null | grep -q "opentelemetry.*Succeeded"; do sleep 10; done
-echo "Both operators ready"
-----
+The Tempo and OpenTelemetry operators were already installed in the scripted block earlier. Let's deploy the tracing backend.
 
 === Deploy Tempo (Trace Storage)
 
@@ -562,7 +591,11 @@ Wait for Tempo to be ready:
 [source,bash,role="execute"]
 ----
 echo "Waiting for Tempo pod..."
-until oc get pods -n tracing-system -l app.kubernetes.io/component=tempo 2>/dev/null | grep -q Running; do sleep 5; done
+ELAPSED=0
+until oc get pods -n tracing-system -l app.kubernetes.io/component=tempo 2>/dev/null | grep -q Running; do
+  sleep 10; ELAPSED=$((ELAPSED+10))
+  [ $ELAPSED -ge 180 ] && echo "ERROR: Timed out" && break
+done
 oc get pods -n tracing-system -l app.kubernetes.io/component=tempo
 ----
 
@@ -716,16 +749,16 @@ The collector is ready but nothing is sending traces yet. Let's send a test trac
 
 [source,bash,role="execute"]
 ----
-oc run test-trace --rm -i --restart=Never --image=registry.access.redhat.com/ubi9/ubi-minimal -n tracing-system -- sh -c "
+oc run test-trace --rm -i --restart=Never \
+  --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  -n tracing-system -- sh -c '
+TIMESTAMP=$(date +%s)
 curl -s -X POST http://otel-collector.tracing-system.svc:4318/v1/traces \
-  -H 'Content-Type: application/json' \
-  -d '{
+  -H "Content-Type: application/json" \
+  -d "{
     \"resourceSpans\": [{
       \"resource\": {
-        \"attributes\": [{
-          \"key\": \"service.name\",
-          \"value\": {\"stringValue\": \"workshop-demo\"}
-        }]
+        \"attributes\": [{\"key\": \"service.name\", \"value\": {\"stringValue\": \"workshop-demo\"}}]
       },
       \"scopeSpans\": [{
         \"spans\": [{
@@ -733,17 +766,14 @@ curl -s -X POST http://otel-collector.tracing-system.svc:4318/v1/traces \
           \"spanId\": \"aaaa222233334444\",
           \"name\": \"GET /api/weather\",
           \"kind\": 2,
-          \"startTimeUnixNano\": \"\$(date +%s)000000000\",
-          \"endTimeUnixNano\": \"\$(date +%s)500000000\",
-          \"attributes\": [{
-            \"key\": \"http.method\",
-            \"value\": {\"stringValue\": \"GET\"}
-          }]
+          \"startTimeUnixNano\": \"${TIMESTAMP}000000000\",
+          \"endTimeUnixNano\": \"${TIMESTAMP}500000000\",
+          \"attributes\": [{\"key\": \"http.method\", \"value\": {\"stringValue\": \"GET\"}}]
         }]
       }]
     }]
-  }' && echo 'Trace sent successfully'
-"
+  }" && echo "Trace sent successfully"
+'
 ----
 
 This simulates what an instrumented application does — sends a span describing a single operation (`GET /api/weather`) with timing data.
