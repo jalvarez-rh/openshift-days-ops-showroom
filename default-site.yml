@@ -1,7 +1,7 @@
 site:
   title: OpenShift Days - Ops Track
   url: http://localhost:8080
-  start_page: openshift-days-ops-track::index.adoc
+  start_page: openshift-days-ops-track::00-setup-overview.adoc
 
 content:
   sources:
