@@ -1,28 +1,15 @@
 = Ingress & Load Balancing
 
-== Module Overview
-
 **Duration:** 25 minutes +
-**Format:** Hands-on ingress configuration +
-**Audience:** Platform Engineers, Network Administrators, Operations Teams
+**Format:** Hands-on ingress configuration
 
-**Narrative Context:**
+== The Scenario
 
-Your cluster is running applications. Now you need to understand how external traffic reaches your applications and how to configure load balancing, TLS termination, and advanced protection features.
-
-== Learning Objectives
-
-By the end of this module, you will be able to:
-
-* Configure and troubleshoot the Ingress Controller
-* Create Routes with different TLS termination strategies
-* Configure rate limiting and IP-based access control
-* Understand load balancing options (Services, Ingress)
-* Scale the ingress controller
+Your apps are deployed and running — but how does external traffic actually reach them? In this module you'll examine the Ingress Controller, create routes with TLS, and then protect them: rate limiting under load, HTTP-to-HTTPS enforcement, and security headers. You'll prove each one works by testing before and after.
 
 == Ingress Controller & Load Balancing
 
-The **Ingress Controller** (based on HAProxy) handles external traffic entering the cluster. It's how users reach your applications.
+The **Ingress Controller** (based on HAProxy) handles all external traffic entering the cluster.
 
 === View Ingress Controller Configuration
 
@@ -51,24 +38,11 @@ You can also view these in the **OCP Console** at **Workloads -> Pods**. Toggle 
 
 image::ingress-images/ingress-router-pods.png[Router pods in the openshift-ingress namespace]
 
-=== View Ingress Service
-
-[source,bash,role="execute"]
-----
-oc get svc -n openshift-ingress
-----
-
-The ingress service varies by platform:
-
-* **HostNetwork** (this cluster): `router-internal-default` service with ClusterIP — routers bind directly to node IPs
-* **Cloud platforms**: `router-default` service with LoadBalancer type and external IP
-* **Bare metal**: Typically NodePort or MetalLB LoadBalancer
-
 === Check Endpoint Publishing Strategy
 
 [source,bash,role="execute"]
 ----
-oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.endpointPublishingStrategy}' | python3 -m json.tool
+oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.endpointPublishingStrategy}' | jq . 2>/dev/null || oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.endpointPublishingStrategy}' | python3 -m json.tool
 ----
 
 == Routes: OpenShift's Ingress Resource
@@ -77,7 +51,7 @@ OpenShift **Routes** expose services externally. They're more feature-rich than 
 
 === Set Up the Application
 
-This section uses the `weathernow` application. Run the following to ensure the project and app are ready:
+This section uses a test application. Run the following to ensure the project and app are ready:
 
 [source,bash,role="execute"]
 ----
@@ -162,7 +136,7 @@ View the TLS settings on the edge route:
 
 [source,bash,role="execute"]
 ----
-oc get route weathernow -o jsonpath='{.spec.tls}' | python3 -m json.tool
+oc get route weathernow -o jsonpath='{.spec.tls}' | jq . 2>/dev/null || oc get route weathernow -o jsonpath='{.spec.tls}' | python3 -m json.tool
 ----
 
 Edge termination means:
@@ -171,39 +145,7 @@ Edge termination means:
 * Traffic from router to pod is unencrypted HTTP
 * The router uses the cluster's wildcard certificate
 
-== Route Annotations for Advanced Features
-
-Routes support annotations for rate limiting, timeouts, and more:
-
-Common annotations:
-
-* `haproxy.router.openshift.io/timeout` - Backend timeout
-* `haproxy.router.openshift.io/rate-limit-connections` - Connection rate limiting
-* `haproxy.router.openshift.io/ip-whitelist` - IP-based access control
-
-=== Apply Rate Limiting
-
-[source,bash,role="execute"]
-----
-oc annotate route weathernow -n app-management \
-  haproxy.router.openshift.io/rate-limit-connections=true \
-  haproxy.router.openshift.io/rate-limit-connections.concurrent-tcp=50 \
-  haproxy.router.openshift.io/rate-limit-connections.rate-http=100 \
-  --overwrite
-----
-
-Verify the annotations were applied:
-
-[source,bash,role="execute"]
-----
-oc get route weathernow -n app-management -o jsonpath='{.metadata.annotations}' | python3 -m json.tool | grep rate-limit
-----
-
-You can also see the annotations in the console. Navigate to **Networking -> Routes** (project: `app-management`), click **weathernow**, then the **YAML** tab:
-
-image::ingress-images/ingress-route-annotations.png[Route YAML showing rate-limit annotations]
-
-=== View Existing Routes Across Cluster
+=== View Routes Across Cluster
 
 [source,bash,role="execute"]
 ----
@@ -216,88 +158,145 @@ In the **OCP Console**, navigate to **Networking -> Routes** (select **All Proje
 
 image::ingress-images/ingress-routes-all.png[All routes across the cluster with TLS termination badges]
 
-The console shows each route with its status, clickable URL, and target service — you can test routes directly from the console without needing `curl`.
+== Protect Your Routes
 
-== Services: Internal Load Balancing
+Routes support annotations that control rate limiting, security headers, and HTTP behavior. Let's apply them and prove they work.
 
-OpenShift Services provide internal load balancing and service discovery.
+=== HTTP to HTTPS Redirect
 
-=== Service Types
+By default, HTTP requests to an edge route get a generic 503 page. In production, you want HTTP to redirect to HTTPS automatically.
 
-[cols="1,2,2"]
-|===
-|Type |Description |Access
-
-|**ClusterIP**
-|Internal IP only
-|Inside cluster only
-
-|**NodePort**
-|Port on every node
-|External via node IP:port
-
-|**LoadBalancer**
-|Cloud/MetalLB external IP
-|External via dedicated IP
-|===
-
-=== View the Ingress Service
-
-Examine how the ingress controller is exposed on this cluster:
+Test the current HTTP behavior:
 
 [source,bash,role="execute"]
 ----
-oc get svc -n openshift-ingress -o wide
+curl -sk -o /dev/null -w "HTTP request: %{http_code}\n" "http://$(oc get route weathernow -o jsonpath='{.spec.host}')"
 ----
 
-On this cluster, you'll see `router-internal-default` with ClusterIP type because the ingress controller uses HostNetwork — it binds directly to the node's network interfaces rather than going through a separate LoadBalancer service. On cloud platforms, you'd see a `router-default` service with `LoadBalancer` type instead.
+Now enable the redirect:
 
-In the console, navigate to **Networking -> Services** (project: `app-management`) and click `weathernow`. The **Pods** tab shows all backend pods with their status, memory, and CPU usage:
+[source,bash,role="execute"]
+----
+oc patch route weathernow -n app-management --type=merge \
+  -p '{"spec":{"tls":{"insecureEdgeTerminationPolicy":"Redirect"}}}'
+----
 
-image::ingress-images/ingress-service-pods.png[Service weathernow showing 3 backend pods]
+[source,bash,role="execute"]
+----
+sleep 3
+ROUTE_HOST=$(oc get route weathernow -o jsonpath='{.spec.host}')
+echo "HTTP request (should 302 redirect):"
+curl -sk -o /dev/null -w "  Status: %{http_code} → %{redirect_url}\n" "http://$ROUTE_HOST"
+echo "Following the redirect:"
+curl -skL -o /dev/null -w "  Status: %{http_code}\n" "http://$ROUTE_HOST"
+----
+
+HTTP now redirects to HTTPS automatically — exactly what you want in production. The three options for `insecureEdgeTerminationPolicy`:
+
+* **Redirect** — HTTP 302 to HTTPS (recommended)
+* **None** — reject HTTP entirely (503)
+* **Allow** — serve content over HTTP too (not recommended)
+
+=== HSTS (HTTP Strict Transport Security)
+
+HSTS tells browsers to always use HTTPS — even if the user types `http://`. This prevents downgrade attacks.
+
+Check the current response headers:
+
+[source,bash,role="execute"]
+----
+curl -sk -D - "https://$(oc get route weathernow -o jsonpath='{.spec.host}')" 2>&1 | grep -i strict || echo "No HSTS header"
+----
+
+Apply HSTS:
+
+[source,bash,role="execute"]
+----
+oc annotate route weathernow -n app-management \
+  haproxy.router.openshift.io/hsts_header="max-age=31536000;includeSubDomains" --overwrite
+----
+
+[source,bash,role="execute"]
+----
+sleep 3
+curl -sk -D - "https://$(oc get route weathernow -o jsonpath='{.spec.host}')" 2>&1 | grep -i strict
+----
+
+The `strict-transport-security` header is now in every response. Browsers that see this will refuse to use HTTP for this domain for one year (`max-age=31536000`).
+
+=== Rate Limiting Under Load
+
+Apply rate limiting to restrict concurrent connections:
+
+[source,bash,role="execute"]
+----
+oc annotate route weathernow -n app-management \
+  haproxy.router.openshift.io/rate-limit-connections=true \
+  haproxy.router.openshift.io/rate-limit-connections.concurrent-tcp=2 \
+  haproxy.router.openshift.io/rate-limit-connections.rate-http=10 \
+  --overwrite
+----
+
+The annotations are set — but do they actually work? Let's prove it. Send 20 concurrent requests:
+
+[source,bash,role="execute"]
+----
+echo "=== With rate limiting (max 2 concurrent) ==="
+ROUTE_HOST=$(oc get route weathernow -o jsonpath='{.spec.host}')
+sleep 3
+RESULTS=""
+for i in $(seq 1 20); do
+  curl -sk -o /dev/null -w "%{http_code}\n" "https://$ROUTE_HOST" &
+done
+wait 2>/dev/null
+----
+
+You'll see a mix of `200` (allowed) and `000` (connection refused). The router is rejecting connections beyond the concurrent limit of 2.
+
+Now remove rate limiting and try the same test:
+
+[source,bash,role="execute"]
+----
+oc annotate route weathernow -n app-management \
+  haproxy.router.openshift.io/rate-limit-connections- \
+  haproxy.router.openshift.io/rate-limit-connections.concurrent-tcp- \
+  haproxy.router.openshift.io/rate-limit-connections.rate-http-
+----
+
+[source,bash,role="execute"]
+----
+echo "=== Without rate limiting ==="
+sleep 3
+for i in $(seq 1 20); do
+  curl -sk -o /dev/null -w "%{http_code}\n" "https://$(oc get route weathernow -o jsonpath='{.spec.host}')" &
+done
+wait 2>/dev/null
+----
+
+All `200` — every request succeeds without rate limiting. That's the difference one annotation makes.
 
 == Ingress Controller Scaling
 
-The ingress controller can be scaled to run more router pods for higher availability and throughput.
+The ingress controller can be scaled by changing `spec.replicas` on the IngressController CR. On cloud platforms with LoadBalancer services, adding replicas puts more routers behind the external load balancer for higher throughput.
 
-=== Check Current Replicas
-
-[source,bash,role="execute"]
-----
-oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.spec.replicas}'
-----
+On this compact cluster, one router per node is already the maximum — scaling up would leave pods Pending (anti-affinity prevents two routers on the same node), and scaling down would drop traffic on the node that loses its router.
 
 [source,bash,role="execute"]
 ----
-oc get pods -n openshift-ingress
+echo "Current replicas: $(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.spec.replicas}')"
+echo "Router pods:"
+oc get pods -n openshift-ingress -o wide
 ----
 
-=== Scale Ingress Controller
+In production cloud environments, you'd scale with:
 
-Let's scale the ingress controller up to see how OpenShift adds router capacity:
-
-[source,bash,role="execute"]
+[source,bash,role="copypaste"]
 ----
-oc patch ingresscontroller default -n openshift-ingress-operator --type=merge -p '{"spec":{"replicas":4}}'
-----
-
-Watch the new router pod come up:
-
-[source,bash,role="execute"]
-----
-oc get pods -n openshift-ingress -w
+# Example — not run on this cluster
+oc patch ingresscontroller default -n openshift-ingress-operator --type=merge -p '{"spec":{"replicas":5}}'
 ----
 
-Press `Ctrl+C` when you see 4 pods running.
-
-=== View Ingress Controller Status
-
-[source,bash,role="execute"]
-----
-oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.conditions}' | python3 -m json.tool
-----
-
-The console provides a cleaner view of these conditions. Navigate to **Administration -> Cluster Settings -> ClusterOperators**, click **ingress**, and view the Conditions table:
+You can view ingress controller health in the console at **Administration -> Cluster Settings -> ClusterOperators**, then click **ingress**:
 
 image::ingress-images/ingress-operator-conditions.png[Ingress operator conditions showing Available, Progressing, Degraded status]
 
@@ -305,15 +304,11 @@ image::ingress-images/ingress-operator-conditions.png[Ingress operator condition
 
 [source,bash,role="execute"]
 ----
-# Scale ingress controller back to 3 replicas
-oc patch ingresscontroller default -n openshift-ingress-operator --type=merge -p '{"spec":{"replicas":3}}'
-
-# Remove rate limiting annotations
+# Remove annotations and reset route
 oc annotate route weathernow -n app-management \
-  haproxy.router.openshift.io/rate-limit-connections- \
-  haproxy.router.openshift.io/rate-limit-connections.concurrent-tcp- \
-  haproxy.router.openshift.io/rate-limit-connections.rate-http-
-
+  haproxy.router.openshift.io/hsts_header- 2>/dev/null
+oc patch route weathernow -n app-management --type=merge \
+  -p '{"spec":{"tls":{"insecureEdgeTerminationPolicy":""}}}' 2>/dev/null
 echo "Cleanup complete"
 ----
 
@@ -321,11 +316,11 @@ echo "Cleanup complete"
 
 **What you learned:**
 
-* The Ingress Controller (HAProxy) handles external traffic
+* The Ingress Controller (HAProxy) handles external traffic on HostNetwork
 * Routes expose services with TLS termination options (edge, passthrough, reencrypt)
-* Route annotations provide rate limiting and IP-based access control
-* Services provide internal load balancing
-* Ingress controller scaling for high availability
+* `insecureEdgeTerminationPolicy: Redirect` enforces HTTPS
+* HSTS headers prevent browser downgrade attacks
+* Rate limiting protects routes from connection floods — and you proved it works
 
 **Key operational commands:**
 
@@ -337,8 +332,8 @@ oc get ingresscontroller -n openshift-ingress-operator
 # View routes
 oc get routes -A
 
-# View ingress service
-oc get svc -n openshift-ingress
+# View router pods
+oc get pods -n openshift-ingress -o wide
 ----
 
 == Additional Resources
