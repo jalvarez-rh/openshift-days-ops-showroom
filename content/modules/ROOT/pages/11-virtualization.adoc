@@ -36,11 +36,15 @@ Now create a VM using the console — the same cloud-style experience your teams
 === Step 1: Open the Create Wizard
 
 1. In the OpenShift console, switch to the **Fleet Virtualization** perspective from the top-left dropdown
-2. Click the **Create** dropdown and select **From InstanceType**
+2. Verify the **Project** dropdown at the top shows `vm-demo` — if not, select it now
+3. Click the **Create** dropdown and select **From InstanceType**
 
 image::virt-create-dropdown.png[Create VirtualMachine dropdown showing From InstanceType option]
 
-=== Step 2: Select InstanceType and Boot Source
+=== Step 2: Select Boot Source and InstanceType
+
+1. At the top of the wizard, select the **Red Hat Enterprise Linux 9** boot source from the volume list
+2. Under **Select InstanceType**, choose **Red Hat provided** -> **General Purpose** -> **medium: 1 CPUs, 4 GiB Memory**
 
 OpenShift Virtualization provides **InstanceTypes** — predefined compute profiles similar to cloud instance families:
 
@@ -55,9 +59,6 @@ OpenShift Virtualization provides **InstanceTypes** — predefined compute profi
 |**N** (Network) |Network-intensive workloads
 |===
 
-1. Under **Select InstanceType**, choose **Red Hat provided** -> **General Purpose** -> **medium: 1 CPUs, 4 GiB Memory**
-2. Select the **Red Hat Enterprise Linux 9** boot source from the volume list above
-
 image::virt-create-wizard.png[VM creation wizard showing InstanceType selection and VM details]
 
 === Step 3: Configure and Create
@@ -65,10 +66,9 @@ image::virt-create-wizard.png[VM creation wizard showing InstanceType selection 
 In the **VirtualMachine details** section:
 
 1. Change the **Name** to `rhel9-vm`
-2. Verify **Project** shows `vm-demo` (if not, go back and select the `vm-demo` project before entering the wizard)
-3. Leave defaults: **30 GiB** disk, default storage class
-4. Leave **Start this VirtualMachine after creation** checked
-5. Click **Create VirtualMachine**
+2. Leave defaults: **30 GiB** disk, default storage class
+3. Leave **Start this VirtualMachine after creation** checked
+4. Click **Create VirtualMachine**
 
 The VM details page opens. You'll see the status change from **Provisioning** to **Running** as the VM boots:
 
@@ -110,7 +110,7 @@ That's your VM. It's a pod. The same `oc` commands work:
 
 [source,bash,role="execute"]
 ----
-oc describe pod -l kubevirt.io/vm=rhel9-vm -n vm-demo | tail -10
+oc describe pod -l vm.kubevirt.io/name=rhel9-vm -n vm-demo | tail -10
 ----
 
 == Unified Monitoring
@@ -140,7 +140,7 @@ VMs get pod IPs on the same SDN as containers — same Services, same Routes, sa
 
 [source,bash,role="execute"]
 ----
-oc get vmi rhel9-vm -o jsonpath='{.status.interfaces[0].ipAddress}' && echo ""
+oc get vmi rhel9-vm -n vm-demo -o jsonpath='{.status.interfaces[0].ipAddress}' && echo ""
 ----
 
 Create a Service pointing to the VM:
@@ -155,7 +155,7 @@ metadata:
   namespace: vm-demo
 spec:
   selector:
-    kubevirt.io/vm: rhel9-vm
+    vm.kubevirt.io/name: rhel9-vm
   ports:
   - port: 22
     targetPort: 22
@@ -175,13 +175,51 @@ For VMs running web applications (Apache, IIS, Tomcat), you'd create a Service o
 
 This is the feature that makes OpenShift Virtualization production-ready. When you need to patch a node, upgrade the OS, or replace hardware, you drain the node. Containers reschedule automatically, and VMs live migrate automatically too. `oc adm drain` handles both. Zero downtime during maintenance windows.
 
-=== Step 1: Note the Current Node
+=== Step 1: Prepare for Migration
 
-On the VM details page (**Overview** tab), look at the **Node** field in the General section and note which node the VM is running on.
+Live migration requires compatible CPU features on the source and target nodes. Workshop clusters can have mixed Intel and AMD nodes — VMs can only migrate between nodes with the same CPU vendor. This script detects your VM's CPU vendor and ensures it's on a node where migration is possible:
 
-=== Step 2: Trigger the Migration
+[source,bash,role="execute"]
+----
+VM_NODE=$(oc get vmi rhel9-vm -n vm-demo -o jsonpath='{.status.nodeName}')
+INTEL_COUNT=$(oc get nodes -l cpu-vendor.node.kubevirt.io/Intel=true --no-headers 2>/dev/null | wc -l | tr -d ' ')
+AMD_COUNT=$(oc get nodes -l cpu-vendor.node.kubevirt.io/AMD=true --no-headers 2>/dev/null | wc -l | tr -d ' ')
 
-1. Click the **Actions** dropdown in the top-right corner
+# Pick the vendor with 2+ nodes so migration has a target
+if [ "$INTEL_COUNT" -ge 2 ]; then VENDOR="Intel"
+elif [ "$AMD_COUNT" -ge 2 ]; then VENDOR="AMD"
+else echo "WARNING: No vendor has 2+ nodes — migration may not work"; VENDOR="Intel"; fi
+
+echo "Cluster has $INTEL_COUNT Intel and $AMD_COUNT AMD nodes — pinning to $VENDOR"
+
+# Check if VM is already on the right vendor
+CURRENT_VENDOR=$(oc get node "$VM_NODE" -o jsonpath='{.metadata.labels}' 2>/dev/null | grep -q 'cpu-vendor.node.kubevirt.io/Intel' && echo Intel || echo AMD)
+if [ "$CURRENT_VENDOR" != "$VENDOR" ]; then
+  echo "VM is on $CURRENT_VENDOR node — moving to $VENDOR..."
+  oc patch vm rhel9-vm -n vm-demo --type=merge -p "{\"spec\":{\"runStrategy\":\"Halted\"}}"
+  until [ "$(oc get vm rhel9-vm -n vm-demo -o jsonpath='{.status.printableStatus}')" = "Stopped" ]; do sleep 5; done
+  oc patch vm rhel9-vm -n vm-demo --type=merge -p "{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"cpu-vendor.node.kubevirt.io/${VENDOR}\":\"true\"}}}}}"
+  oc patch vm rhel9-vm -n vm-demo --type=merge -p '{"spec":{"runStrategy":"Always"}}'
+  until oc get vmi rhel9-vm -n vm-demo 2>/dev/null | grep -q Running; do sleep 10; done
+fi
+
+oc get vmi rhel9-vm -n vm-demo -o jsonpath='Ready — Node: {.status.nodeName}' && echo ""
+----
+
+NOTE: In production, you'd ensure homogeneous CPU hardware in your cluster or use a specific CPU model in the VM's spec. This is a common operational consideration for any KubeVirt/OpenShift Virtualization deployment.
+
+=== Step 2: Note the Current Node
+
+Check which node the VM is on before migration:
+
+[source,bash,role="execute"]
+----
+oc get vmi rhel9-vm -n vm-demo -o jsonpath='Node: {.status.nodeName}' && echo ""
+----
+
+=== Step 3: Trigger the Migration
+
+1. On the VM details page, click the **Actions** dropdown in the top-right corner
 2. Hover over **Migration** to expand the submenu
 3. Select **Compute** — this migrates the VM's running state (CPU/memory) to a different node
 
@@ -191,13 +229,20 @@ image::virt-actions-migrate.png[Actions dropdown showing Migration submenu with 
 
 image::virt-migrate-auto-node.png[Migration dialog with Automatically selected Node option]
 
-=== Step 3: Watch the Migration
+=== Step 4: Watch the Migration
 
 The VM status changes to **Migrating** while the live migration is in progress:
 
 image::virt-migrating-status.png[VM details showing Migrating status]
 
-The migration completes quickly — typically within a few seconds. Once the status returns to **Running**, check the **Node** field — it now shows a different node. The VM moved while still running. No downtime, no reconnection needed.
+The migration completes quickly — typically within 30 seconds. Once the status returns to **Running**, verify the node changed:
+
+[source,bash,role="execute"]
+----
+oc get vmi rhel9-vm -n vm-demo -o jsonpath='Node: {.status.nodeName}' && echo ""
+----
+
+The VM moved while still running. No downtime, no reconnection needed.
 
 == Clone a VM
 
@@ -251,11 +296,20 @@ Click the **Snapshots** tab. The snapshot shows **Ready** status once complete:
 
 image::virt-snapshot-ready.png[Snapshots tab showing rhel9-vm-snapshot with Ready status]
 
-=== Step 3: Restore from Snapshot
+=== Step 3: Break Something
 
-**The scenario:** Imagine you've just applied an OS patch or a configuration change and something broke. Instead of spending hours troubleshooting or rebuilding from scratch, you restore to the snapshot you took before the change. The VM comes back exactly as it was.
+The snapshot is your safety net — let's prove it works by breaking the VM. Open the **Console** tab and log in with the guest credentials shown at the top. Then create a file and delete something:
 
-1. First, stop the VM — click the **Stop** button (square icon) in the top-right action buttons
+----
+touch /home/cloud-user/important-data.txt
+sudo rm /etc/motd
+----
+
+Now the VM has changed — a new file exists, a system file is gone. Let's restore to the snapshot and prove both changes are reverted.
+
+=== Step 4: Restore from Snapshot
+
+1. **Stop** the VM — click the **Stop** button (square icon) in the top-right action buttons
 
 2. Once the VM shows **Stopped**, go to the **Snapshots** tab, click the kebab menu (three dots) next to the snapshot, and select **Restore VirtualMachine from snapshot**
 
@@ -265,7 +319,16 @@ image::virt-snapshot-restore-menu.png[Snapshot kebab menu showing Restore Virtua
 
 image::virt-restore-confirmation.png[Restore snapshot confirmation dialog]
 
-4. Start the VM again by clicking the **Start** button (play icon). The VM's disk and configuration are now back to the exact state they were in when you took the snapshot. This is how you'd roll back a failed OS patch or a broken config change — without rebuilding the VM from scratch.
+4. **Start** the VM again by clicking the **Start** button (play icon)
+
+Once the VM is running, open the **Console** tab and log in again. Verify the restore worked:
+
+----
+ls /home/cloud-user/important-data.txt
+cat /etc/motd
+----
+
+The file you created is gone and `/etc/motd` is back. The disk was restored to the exact state when you took the snapshot — this is how you roll back a failed OS patch or a broken config change without rebuilding from scratch.
 
 == Summary
 
