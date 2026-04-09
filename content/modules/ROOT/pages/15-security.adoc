@@ -1,0 +1,19 @@
+= Advanced Cluster Security
+
+== Module Overview
+
+**Duration:** 15 minutes +
+**Format:** Hands-on lab +
+**Audience:** Security Engineers, Platform Engineers, IT Operations
+
+== Learning Objectives
+
+By the end of this module, you will:
+
+* Scan workloads with Red Hat Advanced Cluster Security (ACS/RHACS)
+* Review vulnerability findings and compliance reports
+* Understand zero-trust workload identity management
+
+== Coming Soon
+
+This module is under development.

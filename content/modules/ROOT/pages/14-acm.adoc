@@ -1,0 +1,19 @@
+= ACM Multi-Cluster Management
+
+== Module Overview
+
+**Duration:** 30 minutes +
+**Format:** Hands-on lab +
+**Audience:** Platform Engineers, Infrastructure Architects, IT Operations
+
+== Learning Objectives
+
+By the end of this module, you will:
+
+* Manage multiple clusters with Advanced Cluster Management (ACM)
+* Work with hosted control planes (HCP)
+* Apply policy-based governance across clusters
+
+== Coming Soon
+
+This module is under development.
