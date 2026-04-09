@@ -36,9 +36,9 @@ A comprehensive modular workshop for OpenShift administrators. Modules are selec
 * *link:content/modules/ROOT/pages/11-virtualization.adoc[11 - Virtualization]* (35 min) - VM creation, networking, live migration, cloning, snapshots
 * *link:content/modules/ROOT/pages/12-developer-hub.adoc[12 - Developer Hub]* (30 min) - Software catalog, templates, deployment verification
 * *link:content/modules/ROOT/pages/13-openshift-lightspeed.adoc[13 - OpenShift Lightspeed]* (10 min) - AI assistant, OLSConfig creation, console integration
-* *14 - ACM Multi-Cluster Management* (30 min) - _Coming soon_
-* *15 - Advanced Cluster Security* (15 min) - _Coming soon_
-* *16 - Secrets Management (HashiCorp Vault)* - _TBD_
+* *link:content/modules/ROOT/pages/14-acm.adoc[14 - ACM Multi-Cluster Management]* (30 min) - ACM, hosted control planes, policy-based governance
+* *link:content/modules/ROOT/pages/15-security.adoc[15 - Advanced Cluster Security]* (15 min) - Workload scanning with ACS, compliance, zero-trust identity
+* *link:content/modules/ROOT/pages/16-secrets-management.adoc[16 - Secrets Management (HashiCorp Vault)]* - _TBD_
 
 == Module Selection
 
