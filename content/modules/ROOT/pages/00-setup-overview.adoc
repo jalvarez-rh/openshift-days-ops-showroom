@@ -125,39 +125,9 @@ oc get clusterversion
 
 This confirms your cluster version and update channel.
 
-== What is OpenShift?
+== Exploring the Platform
 
-OpenShift Container Platform is an **enterprise Kubernetes platform** that includes:
-
-* **Kubernetes** - The container orchestration engine
-* **Integrated Developer Tools** - S2I builds, CI/CD pipelines
-* **Enterprise Operations** - Monitoring, logging, registry, networking
-* **Security** - Built-in RBAC, SELinux, secrets management
-* **Full Support** - Red Hat enterprise support and SLAs
-
-Think of it as: **Kubernetes + Everything Ops Teams Need**
-
-== What OpenShift Adds to Kubernetes
-
-=== 1. Integrated Platform
-
-OpenShift builds on Kubernetes and adds the operational tooling that production environments need — pre-integrated and ready to use:
-
-* Integrated image registry
-* Prometheus monitoring stack with built-in dashboards
-* Loki logging
-* HAProxy-based ingress routing
-* Tekton Pipelines
-* RHACS security scanning
-* Single vendor support for the entire stack
-
-=== 2. Full-Featured Web Console
-
-OpenShift provides a rich Administrator Console alongside the CLI — giving ops teams a visual interface for cluster management, monitoring, and troubleshooting.
-
-Let's explore the console now.
-
-== Hands-On: Exploring the OpenShift Console
+Your cluster is already running with monitoring, a container registry, ingress routing, and a web console — all built in. Let's see what's there.
 
 === Step 1: Access the Administrator Console
 
@@ -205,9 +175,9 @@ image::ocp-dashboard-overview.png[OpenShift Administrator Dashboard Overview]
 
 This single dashboard gives you cluster health, utilisation, inventory, and recent events — all in one view, with no setup required.
 
-== Built-in Monitoring
+== Monitoring
 
-OpenShift ships with a fully managed Prometheus monitoring stack — Prometheus, Alertmanager, and pre-built dashboards are all running from the moment the cluster is installed.
+Nobody installed Prometheus on this cluster. It's already running. Let's prove it.
 
 === Explore Prometheus (CLI)
 
@@ -257,9 +227,9 @@ You'll see CPU usage broken down by namespace. Look at which namespaces are cons
 
 image::prometheus-cpu-by-namespace-query.png[Prometheus Query Results - CPU by Namespace]
 
-== Integrated Container Registry
+== Container Registry
 
-Check if a container registry is running:
+Did anyone set up an image registry? Let's check:
 
 [source,bash,role="execute"]
 ----
@@ -278,7 +248,7 @@ node-ca-5lh4f                                      1/1     Running   0          
 ...
 ----
 
-OpenShift includes an integrated enterprise container registry — pre-configured with authentication, storage, and ready to use.
+Already running — with authentication, HA replicas, and storage configured. Nobody installed it.
 
 === View Image Streams
 
@@ -299,9 +269,9 @@ python                 image-registry.openshift-image-registry.svc:5000/openshif
 
 These are **ready to use** - no Docker Hub rate limits, no external dependencies.
 
-== Enterprise Routing
+== Routing
 
-Check the ingress configuration:
+Same story with ingress — it's already there. Check it:
 
 [source,bash,role="execute"]
 ----
@@ -318,11 +288,11 @@ openshift-console          console               console-openshift-console.apps.
 openshift-console          downloads             downloads-openshift-console.apps.cluster...
 ----
 
-**OpenShift Routes** provide built-in HAProxy-based ingress routing with automatic TLS certificate management and support for path-based and hostname-based routing. OpenShift also supports standard Kubernetes `Ingress` resources.
+Routes give you HAProxy-based ingress with automatic TLS certs and DNS. OpenShift also supports standard Kubernetes `Ingress` resources if you prefer.
 
 === Try It: Deploy and Expose in 30 Seconds
 
-Deploy a web server and make it externally accessible — all in three commands:
+How fast can you go from nothing to a running app with a public URL? Three commands:
 
 [source,bash,role="execute"]
 ----
@@ -347,9 +317,9 @@ Clean up (runs in the background so we can move on):
 oc delete project quick-demo &>/dev/null &
 ----
 
-== Unified Node Management
+== Node Management
 
-View your cluster nodes:
+Let's look at what you're running on:
 
 [source,bash,role="execute"]
 ----
@@ -472,14 +442,14 @@ OpenShift handles upgrades automatically:
 
 == Operator Ecosystem
 
-OpenShift includes a **Software Catalog** - a marketplace of pre-certified operators.
+Need to add something to the cluster? See how many operators are available right now:
 
 [source,bash,role="execute"]
 ----
 oc get packagemanifests -n openshift-marketplace | wc -l
 ----
 
-You'll see **hundreds of operators** available out of the box.
+Hundreds. All certified and ready to install.
 
 === Explore Software Catalog (Console)
 
@@ -498,40 +468,10 @@ You'll see **hundreds of operators** available out of the box.
 
 image::software-catalog-operators.png[Software Catalog filtered to Operators showing available operator tiles]
 
-Install enterprise-grade, Red Hat certified software with **one click**.
+Browse the tiles, click into anything that looks interesting — this is your cluster, explore it.
 
-== Summary: Why OpenShift for Operations
+== What's Next
 
-[cols="1,1"]
-|===
-|Challenge |OpenShift Solution
+You've seen what's running out of the box — monitoring, registry, routing, node management, upgrades, and a catalog of operators ready to install. None of it required setup.
 
-|"How do I monitor the cluster?"
-|Built-in Prometheus & dashboards
-
-|"How do I store container images?"
-|Integrated registry
-
-|"How do I route traffic to apps?"
-|Built-in Routes with HAProxy
-
-|"How do I upgrade Kubernetes?"
-|Over-the-air upgrades, zero-downtime
-
-|"How do I scale infrastructure?"
-|MachineSets API
-
-|"How do I add capabilities?"
-|Software Catalog with hundreds of operators
-
-|"Who supports this stack?"
-|Single Red Hat support contract
-|===
-
-== Key Takeaways
-
-✅ **Integrated Platform** - No need to install/configure 10+ separate tools +
-✅ **Web Console + CLI** - Choose your workflow, same capabilities +
-✅ **Built-in Operations** - Monitoring, logging, registry, upgrades included +
-✅ **Automated Infrastructure** - MachineSets handle scaling, MachineConfigs handle OS +
-✅ **Single Support Contract** - One vendor for the entire stack
+The rest of this workshop goes deeper. Select the next module from the navigation to start working with it hands-on.
