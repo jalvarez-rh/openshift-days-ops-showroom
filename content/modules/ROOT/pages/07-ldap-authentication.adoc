@@ -1,6 +1,6 @@
 = Identity & Users
 
-**Duration:** 55 minutes +
+**Duration:** 45 minutes +
 **Format:** Hands-on identity provider configuration
 
 == The Scenario
