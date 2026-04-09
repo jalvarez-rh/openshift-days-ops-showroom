@@ -7,9 +7,13 @@
 
 How many times a week does someone message you: _"Is my app running?"_ or _"Can you create me a namespace with CI/CD?"_
 
-Red Hat Developer Hub (RHDH) is a developer portal based on Backstage. You register your services in a catalog, enable plugins that show live cluster data, and developers stop asking you questions they can answer themselves.
+Red Hat Developer Hub (RHDH) is a developer portal based on Backstage. It gives you:
 
-In this module you'll deploy it, register applications, and wire up the Kubernetes plugin so the catalog shows real-time pod status — no `oc` access required for developers.
+* **Software Catalog** — a single place to register every service, API, and library your teams run. Developers find what exists, who owns it, and what state it's in.
+* **Software Templates** — self-service "Create New App" workflows that provision namespaces, RBAC, pipelines, and git repos using patterns you define as an ops team.
+* **Plugins** — connect the catalog to live systems (Kubernetes, ArgoCD, Tekton, etc.) so developers see real-time status without needing cluster access.
+
+In this module you'll verify the deployment, register applications in the catalog, and wire up the Kubernetes plugin so it shows real-time pod status — no `oc` access required for developers.
 
 == Verify RHDH Deployment
 
