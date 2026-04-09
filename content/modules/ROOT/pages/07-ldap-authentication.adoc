@@ -167,13 +167,16 @@ oc get pods -n openshift-authentication
 
 All oauth-openshift pods should be `Running` and `Ready 1/1`.
 
-The OAuth pods need a few moments after rollout to fully initialize their LDAP connections. Wait for them to be ready:
+The OAuth pods need a few moments after rollout to fully initialize their LDAP connections. This checks that LDAP login actually works before moving on:
 
 [source,bash,role="execute"]
 ----
-echo "Waiting for OAuth pods to initialize LDAP connections..."
-sleep 30
-echo "Ready to test LDAP authentication"
+echo "Waiting for LDAP authentication to be ready..."
+until oc login -u normaluser1 -p 'Op#nSh1ft' $(oc whoami --show-server) --insecure-skip-tls-verify 2>&1 | grep -q "Login successful"; do
+  sleep 10
+done
+oc login -u admin --insecure-skip-tls-verify 2>/dev/null
+echo "LDAP authentication is ready"
 ----
 
 == Step 4: Test LDAP Authentication
@@ -268,17 +271,7 @@ rfc2307:
 EOF
 ----
 
-**View the group sync configuration:**
-
-[source,bash,role="execute"]
-----
-cat $HOME/support/groupsync.yaml
-----
-
-The configuration:
-- Searches for LDAP groups matching `ose-*` pattern
-- Creates OpenShift Groups with matching names
-- Populates group membership from LDAP
+This configuration searches for LDAP groups matching `ose-*`, creates matching OpenShift Groups, and populates membership from LDAP.
 
 **Run the group sync:**
 
@@ -377,7 +370,7 @@ IMPORTANT: Verify `oc whoami` shows `normaluser1`. If it still shows `admin`, th
 oc get projects
 ----
 
-Result: `No resources found.` (Regular users can't see all projects)
+You should see no `app-` projects — normaluser1 isn't in any project-specific groups. You may see one or two system namespaces that grant access to all authenticated users — that's normal.
 
 **Test as a fancy developer:**
 
@@ -555,44 +548,7 @@ Both return: `yes` (view role allows read operations)
 
 **Perfect!** This demonstrates how operations teams verify RBAC is correctly configured without creating test resources.
 
-== Step 10: Manage Users and Groups in Console
-
-The web console provides a graphical interface for user and group management.
-
-[IMPORTANT]
-====
-Make sure you're logged into the OpenShift console as **admin** (not an LDAP user) to access User Management. Regular users don't have permission to view cluster-wide user and group information.
-====
-
-**View users in console:**
-
-Navigate to: **User Management → Users**
-
-You'll see all users who have logged in, their identities, and associated groups.
-
-image::ldap-users-detail.png[User Management showing LDAP users with identities]
-
-**View groups in console:**
-
-Navigate to: **User Management → Groups**
-
-Shows all synced LDAP groups and their members.
-
-image::ldap-groups-detail.png[User Management showing synced LDAP groups with member counts]
-
-**View role bindings in console:**
-
-Navigate to: **User Management → RoleBindings**
-
-Filter by project to see who has access to what.
-
-**Console advantages:**
-- Visual overview of all users/groups
-- Easy role binding management
-- Quick access review
-- No need to remember YAML syntax
-
-== Step 11: Security Best Practices
+== Step 10: Security Best Practices
 
 **Ensure kubeadmin is removed after configuring identity provider:**
 
@@ -638,25 +594,15 @@ For complete implementation details, see the link:https://docs.redhat.com/en/doc
 
 == Summary
 
-**What you configured:**
-
-✅ **LDAP Identity Provider** - Integrated enterprise LDAP authentication +
-✅ **Group Synchronization** - Imported LDAP groups to OpenShift +
-✅ **RBAC with Groups** - Granted cluster-reader and project-specific roles +
-✅ **Project Collaboration** - Created dev/test/prod projects with team access +
-✅ **Permission Testing** - Verified users have correct access levels +
-✅ **Security Hardening** - Understood kubeadmin removal and group sync automation
-
-**Key takeaway:** OpenShift authentication integrates with existing identity management (LDAP, OIDC, HTPasswd, GitHub, and others) and uses group-based RBAC for scalable permission management.
+You configured LDAP authentication end-to-end: connected to an external directory, synced groups, mapped those groups to project-level RBAC, and verified it by logging in as three different users with different access levels.
 
 **Production recommendations:**
 
 1. Use LDAP/OIDC, never HTPasswd
-2. Remove kubeadmin bootstrap account after configuring real identity provider
-3. Automate group sync with CronJob
+2. Remove kubeadmin after configuring a real identity provider
+3. Automate group sync with a CronJob
 4. Use groups for RBAC, not individual users
-5. Follow least-privilege principle (view over edit, edit over admin)
-6. Regular access reviews using console User Management
+5. Follow least-privilege: view over edit, edit over admin
 
 == Additional Resources
 
@@ -672,8 +618,9 @@ Restore the cluster to its original authentication state before proceeding to ot
 
 [source,bash,role="execute",subs="attributes"]
 ----
-# Log back in as admin
+# Verify admin login works before removing LDAP
 oc login -u {openshift_cluster_admin_username} -p {openshift_cluster_admin_password} --insecure-skip-tls-verify
+oc whoami | grep -q admin || { echo "ERROR: Admin login failed — do not proceed with cleanup"; exit 1; }
 
 # Restore OAuth to htpasswd only (remove LDAP provider)
 cat <<'CLEANUP' | oc apply -f -
