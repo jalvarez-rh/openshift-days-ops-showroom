@@ -13,7 +13,7 @@
 //   module_enable_acm, module_enable_security
 
 // Setup & Overview (always shown)
-* xref:00-setup-overview.adoc[Setup & Overview]
+* xref:index.adoc[Setup & Overview]
 ifeval::["{module_enable_install}" == "true"]
 * xref:01-installation.adoc[Installation & Verification]
 endif::[]
