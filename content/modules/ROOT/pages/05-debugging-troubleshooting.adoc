@@ -432,7 +432,6 @@ NOTE: If the **Developer Hub** module is part of your workshop, **skip this clea
 
 [source,bash,role="execute"]
 ----
-oc delete namespace ops-track-demo --ignore-not-found
-
-echo "Cleanup complete"
+oc delete namespace ops-track-demo --ignore-not-found --wait=false
+echo "Cleanup running in background — you can continue to the next module"
 ----
