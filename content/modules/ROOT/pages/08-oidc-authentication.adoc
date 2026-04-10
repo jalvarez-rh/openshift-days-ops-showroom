@@ -64,6 +64,8 @@ until oc get crd keycloaks.k8s.keycloak.org 2>/dev/null | grep -q keycloaks; do 
 echo "RHBK operator ready"
 ----
 
+NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
+
 === Step 2: Deploy Keycloak
 
 Deploy a Keycloak instance. We use `dev-file` for the embedded database — in production you'd use external PostgreSQL.
@@ -99,6 +101,8 @@ echo "Waiting for Keycloak to be ready..."
 oc wait --for=condition=Ready pod/keycloak-0 -n rhbk --timeout=120s
 echo "Keycloak is running"
 ----
+
+NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
 
 Create a route for external access:
 
@@ -334,7 +338,7 @@ Wait for the OAuth rollout:
 
 [source,bash,role="execute"]
 ----
-oc rollout status deployment/oauth-openshift -n openshift-authentication
+oc rollout status deployment/oauth-openshift -n openshift-authentication --timeout=120s
 echo "Waiting for all OAuth pods to be ready with new config..."
 until [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-headers 2>/dev/null | grep -c Running)" -ge 3 ] && \
       [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-headers 2>/dev/null | grep -vc Running)" -eq 0 ]; do
@@ -342,6 +346,8 @@ until [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-h
 done
 echo "OAuth is live with rhbk provider — you can log in now"
 ----
+
+NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
 
 === Step 8: Test OIDC Login and Automatic Group Sync
 

@@ -66,6 +66,8 @@ Wait for the new pod to be ready (this takes about a minute):
 oc rollout status deployment/backstage-developer-hub -n backstage --timeout=120s
 ----
 
+TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
+
 NOTE: In production, you'd also configure a GitHub integration with an access token for private repositories. The `backend.reading.allow` approach works for public repos.
 
 === Step 3: Access the Portal
@@ -291,6 +293,8 @@ The Operator sees the CR change and triggers a rolling restart — new pods with
 ----
 oc rollout status deployment/backstage-developer-hub -n backstage --timeout=300s
 ----
+
+TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
 
 This takes 2-3 minutes as the init container installs the dynamic plugins before the main container starts.
 

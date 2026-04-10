@@ -212,6 +212,8 @@ fi
 oc get vmi rhel9-vm -n vm-demo -o jsonpath='Ready — Node: {.status.nodeName}' && echo ""
 ----
 
+NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
+
 NOTE: In production, you'd ensure homogeneous CPU hardware in your cluster or use a specific CPU model in the VM's spec. This is a common operational consideration for any KubeVirt/OpenShift Virtualization deployment.
 
 ==== Step 2: Note the Current Node

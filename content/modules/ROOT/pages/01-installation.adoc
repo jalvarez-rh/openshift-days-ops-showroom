@@ -174,6 +174,8 @@ oc rollout status deployment/test-app -n install-test --timeout=60s
 oc create route edge test-app --service=test-app -n install-test
 ----
 
+TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
+
 Test the route:
 
 [source,bash,role="execute"]

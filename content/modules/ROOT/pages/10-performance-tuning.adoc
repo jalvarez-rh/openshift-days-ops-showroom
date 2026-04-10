@@ -163,7 +163,7 @@ Wait for it to be ready:
 
 [source,bash,role="execute"]
 ----
-oc rollout status deployment/demo-app
+oc rollout status deployment/demo-app --timeout=120s
 ----
 
 === Create an HPA

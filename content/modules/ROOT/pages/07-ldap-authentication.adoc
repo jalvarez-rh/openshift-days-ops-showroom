@@ -156,8 +156,10 @@ For detailed LDAP configuration, see link:https://docs.redhat.com/en/documentati
 
 [source,bash,role="execute"]
 ----
-oc rollout status deployment/oauth-openshift -n openshift-authentication
+oc rollout status deployment/oauth-openshift -n openshift-authentication --timeout=120s
 ----
+
+NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
 
 Wait for: `deployment "oauth-openshift" successfully rolled out`
 
@@ -181,6 +183,8 @@ done
 oc login -u admin --insecure-skip-tls-verify 2>/dev/null
 echo "LDAP authentication is ready"
 ----
+
+NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
 
 == Test & Sync Groups
 
