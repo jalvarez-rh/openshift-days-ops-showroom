@@ -122,8 +122,6 @@ echo "Password: $(oc get secret keycloak-initial-admin -n rhbk -o jsonpath='{.da
 
 Copy the URL and open it in a **new browser tab**. Log in with the admin credentials above.
 
-image::oidc-rhbk-users.png[RHBK admin console after login]
-
 You're now in the Red Hat build of Keycloak admin console. You'll see the **master realm** welcome page:
 
 image::oidc-rhbk-welcome.png[RHBK admin console welcome page showing master realm]
