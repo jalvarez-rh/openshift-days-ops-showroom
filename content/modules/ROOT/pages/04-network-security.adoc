@@ -6,7 +6,7 @@
 
 == The Scenario
 
-Your apps are receiving traffic — but by default, every pod can talk to every other pod, and any pod can reach the internet. That's not production-ready.
+Your apps are receiving traffic - but by default, every pod can talk to every other pod, and any pod can reach the internet. That's not production-ready.
 
 In this module you'll lock things down: implement NetworkPolicy to isolate pods, configure EgressFirewall to control outbound traffic, and set up EgressIP for predictable source IPs that external firewalls can whitelist.
 
@@ -105,7 +105,7 @@ spec:
 EOF
 ----
 
-Three lines do all the work: `podSelector: {}` targets every pod, `policyTypes: Ingress` says we're controlling inbound traffic, and the empty `ingress: []` list means nothing is allowed through. This is the standard "default deny" pattern — start locked down, then punch specific holes.
+Three lines do all the work: `podSelector: {}` targets every pod, `policyTypes: Ingress` says we're controlling inbound traffic, and the empty `ingress: []` list means nothing is allowed through. This is the standard "default deny" pattern - start locked down, then punch specific holes.
 
 === Test Connectivity Again (Should Fail)
 
@@ -119,7 +119,7 @@ Expected: Connection times out (no output after 5 seconds). The NetworkPolicy bl
 
 === Allow Traffic from Specific Namespace
 
-Now punch a hole — allow only the frontend namespace to reach the backend, and only on port 8080:
+Now punch a hole - allow only the frontend namespace to reach the backend, and only on port 8080:
 
 [source,bash,role="execute"]
 ----
@@ -170,11 +170,11 @@ oc get networkpolicy -n netpol-backend
 
 You should see both `deny-all` and `allow-from-frontend` policies.
 
-Now switch to the **OCP Console** tab and navigate to **Networking -> NetworkPolicies** (project: `netpol-backend`). Click on `deny-all` — the console clearly states "All incoming traffic is denied":
+Now switch to the **OCP Console** tab and navigate to **Networking -> NetworkPolicies** (project: `netpol-backend`). Click on `deny-all` - the console clearly states "All incoming traffic is denied":
 
 image::netpol-deny-all.png[deny-all NetworkPolicy showing all incoming traffic denied]
 
-Click back and open `allow-from-frontend` — the console renders the ingress rule as a readable table showing the pod selector, namespace selector, and allowed port:
+Click back and open `allow-from-frontend` - the console renders the ingress rule as a readable table showing the pod selector, namespace selector, and allowed port:
 
 image::netpol-allow-frontend.png[allow-from-frontend NetworkPolicy showing selectors and port rule]
 
@@ -201,7 +201,7 @@ Compare this to the YAML you just wrote. In production, when you're auditing pol
 
 === AdminNetworkPolicy: Cluster-Scoped Policies
 
-Standard NetworkPolicies are namespace-scoped — each team manages their own. **AdminNetworkPolicy (ANP)** is a cluster-scoped resource that lets platform administrators enforce network policies across all namespaces, with priority over namespace-scoped policies.
+Standard NetworkPolicies are namespace-scoped - each team manages their own. **AdminNetworkPolicy (ANP)** is a cluster-scoped resource that lets platform administrators enforce network policies across all namespaces, with priority over namespace-scoped policies.
 
 View the available ANP API:
 
@@ -245,7 +245,7 @@ Verify it was created:
 oc get adminnetworkpolicy
 ----
 
-The `PRIORITY` field determines evaluation order — lower numbers are evaluated first. This allows platform teams to enforce security baselines that namespace owners cannot override.
+The `PRIORITY` field determines evaluation order - lower numbers are evaluated first. This allows platform teams to enforce security baselines that namespace owners cannot override.
 
 Clean up:
 
@@ -254,7 +254,7 @@ Clean up:
 oc delete adminnetworkpolicy cluster-deny-external-dns
 ----
 
-NOTE: AdminNetworkPolicy uses `policy.networking.k8s.io/v1alpha1`. There is also `BaselineAdminNetworkPolicy` which acts as a fallback — it applies only when no other ANP or NetworkPolicy matches. Together, ANP and BANP give platform teams guardrails while still allowing namespace-level customization.
+NOTE: AdminNetworkPolicy uses `policy.networking.k8s.io/v1alpha1`. There is also `BaselineAdminNetworkPolicy` which acts as a fallback - it applies only when no other ANP or NetworkPolicy matches. Together, ANP and BANP give platform teams guardrails while still allowing namespace-level customization.
 
 == Egress Controls
 
@@ -371,7 +371,7 @@ NOTE: Wildcard DNS names (e.g., `*.redhat.com`) are a Technology Preview feature
 * Rules do not apply to traffic routed through OpenShift Routes or Ingress
 * Maximum of **8000 rules** per EgressFirewall
 * If you use a deny-all rule, pods lose access to the OpenShift API server unless you explicitly allow it
-* NetworkPolicy does **not** apply to pods using host networking — those pods bypass network policies entirely
+* NetworkPolicy does **not** apply to pods using host networking - those pods bypass network policies entirely
 * If you add a deny-all **egress** NetworkPolicy, you'll break DNS resolution. Pods need to reach CoreDNS (port 53 UDP/TCP in the `openshift-dns` namespace). Always allow DNS explicitly when restricting egress.
 ====
 
@@ -491,7 +491,7 @@ CoreDNS provides DNS resolution for all pods in the cluster.
 ----
 # Delete network policy test namespaces in the background
 oc delete namespace netpol-frontend netpol-backend --ignore-not-found --wait=false
-echo "Cleanup running in background — you can continue to the next module"
+echo "Cleanup running in background - you can continue to the next module"
 ----
 
 **What you learned:**

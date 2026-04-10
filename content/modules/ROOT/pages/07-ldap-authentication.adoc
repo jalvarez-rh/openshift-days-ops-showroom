@@ -6,9 +6,9 @@
 
 == The Scenario
 
-Your cluster is running with an HTPasswd admin account — fine for initial setup, but production needs real identity management. In this module you'll integrate an LDAP directory, sync groups into OpenShift, configure RBAC so different teams get different access, and test it by logging in as actual users.
+Your cluster is running with an HTPasswd admin account - fine for initial setup, but production needs real identity management. In this module you'll integrate an LDAP directory, sync groups into OpenShift, configure RBAC so different teams get different access, and test it by logging in as actual users.
 
-OpenShift's OAuth server supports multiple identity providers — LDAP, OpenID Connect, HTPasswd, GitHub, GitLab, Google, and more. We're using LDAP here because it's the most common enterprise setup and demonstrates group synchronization. The OIDC module covers the modern alternative.
+OpenShift's OAuth server supports multiple identity providers - LDAP, OpenID Connect, HTPasswd, GitHub, GitLab, Google, and more. We're using LDAP here because it's the most common enterprise setup and demonstrates group synchronization. The OIDC module covers the modern alternative.
 
 TIP: For the full list of supported identity providers, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/understanding-identity-provider[Understanding identity providers].
 
@@ -23,9 +23,9 @@ Check the current OAuth configuration:
 oc get oauth cluster -o yaml
 ----
 
-TIP: You can also view this in the console at **Administration > Cluster Settings > Configuration > OAuth** — it shows the configured identity providers in a readable format.
+TIP: You can also view this in the console at **Administration > Cluster Settings > Configuration > OAuth** - it shows the configured identity providers in a readable format.
 
-Look at the `spec.identityProviders` section. You'll see that an `htpasswd` identity provider is already configured — this was set up during cluster provisioning to provide the `admin` account you're using now.
+Look at the `spec.identityProviders` section. You'll see that an `htpasswd` identity provider is already configured - this was set up during cluster provisioning to provide the `admin` account you're using now.
 
 [NOTE]
 ====
@@ -34,7 +34,7 @@ In a fresh cluster, `spec` would be empty (`spec: {}`). This workshop cluster ha
 
 **What about `kubeadmin`?**
 
-Fresh OpenShift clusters come with a `kubeadmin` bootstrap account stored as a Secret in `kube-system`. This account bypasses identity providers entirely — it's meant for initial setup only. On this workshop cluster, `kubeadmin` has already been removed and replaced with the `admin` HTPasswd account you're using now. That's the correct production posture.
+Fresh OpenShift clusters come with a `kubeadmin` bootstrap account stored as a Secret in `kube-system`. This account bypasses identity providers entirely - it's meant for initial setup only. On this workshop cluster, `kubeadmin` has already been removed and replaced with the `admin` HTPasswd account you're using now. That's the correct production posture.
 
 You can verify it's gone:
 
@@ -43,7 +43,7 @@ You can verify it's gone:
 oc get secret -n kube-system kubeadmin -o yaml
 ----
 
-Expected: `not found` — confirming the bootstrap account has been removed.
+Expected: `not found` - confirming the bootstrap account has been removed.
 
 === Step 2: Understand LDAP Structure
 
@@ -123,7 +123,7 @@ spec:
         name: ldap-secret          # references the Secret created earlier
       ca:
         name: ca-config-map        # CA cert to validate LDAP server's TLS
-      insecure: false              # always false in production — validates TLS
+      insecure: false              # always false in production - validates TLS
       url: "ldaps://ldap.jumpcloud.com/ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com?uid?sub?(memberOf=cn=ose-user,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400  # tokens valid for 24 hours
@@ -209,7 +209,7 @@ Try logging in as a regular user:
 oc login -u normaluser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify
 ----
 
-You should see `Login successful.` — the user was authenticated against the LDAP server.
+You should see `Login successful.` - the user was authenticated against the LDAP server.
 
 **Check your identity:**
 
@@ -330,20 +330,20 @@ The group includes:
 
 image::ldap-groups-console.png[User Management Groups showing synced LDAP groups with member counts]
 
-Click on `ose-fancy-dev` — you'll see fancyuser1 and fancyuser2 listed as members. Now click **User Management -> Users**:
+Click on `ose-fancy-dev` - you'll see fancyuser1 and fancyuser2 listed as members. Now click **User Management -> Users**:
 
 image::ldap-users-console.png[User Management Users showing only users who have logged in]
 
 Notice only `normaluser1` appears (and `admin`). The other users exist in LDAP groups but haven't logged in yet, so OpenShift hasn't created their User objects.
 
-This is an important distinction: **group membership is synced immediately**, but **User objects are created on first login**. In production, you might see a group with 50 members but only 10 User objects — that just means 40 people haven't logged in yet.
+This is an important distinction: **group membership is synced immediately**, but **User objects are created on first login**. In production, you might see a group with 50 members but only 10 User objects - that just means 40 people haven't logged in yet.
 
 [source,bash,role="execute"]
 ----
 oc get users
 ----
 
-Confirms the same thing via CLI — only users who have authenticated appear here.
+Confirms the same thing via CLI - only users who have authenticated appear here.
 
 === Step 6: Configure RBAC with Groups
 
@@ -360,7 +360,7 @@ You can verify this in the console. Navigate to **User Management -> RoleBinding
 
 image::ldap-clusterrolebinding-reader.png[Cluster-wide RoleBindings showing ose-fancy-dev group bound to cluster-reader]
 
-The first row shows `ose-fancy-dev` bound to `cluster-reader` across all namespaces — exactly what we just configured.
+The first row shows `ose-fancy-dev` bound to `cluster-reader` across all namespaces - exactly what we just configured.
 
 For more on roles, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/using-rbac[Using RBAC to define and apply permissions].
 
@@ -372,14 +372,14 @@ oc login -u normaluser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify
 oc whoami
 ----
 
-IMPORTANT: Verify `oc whoami` shows `normaluser1`. If it still shows `admin`, the login failed — wait 30 seconds and try again.
+IMPORTANT: Verify `oc whoami` shows `normaluser1`. If it still shows `admin`, the login failed - wait 30 seconds and try again.
 
 [source,bash,role="execute"]
 ----
 oc get projects
 ----
 
-You should see no `app-` projects — normaluser1 isn't in any project-specific groups. You may see one or two system namespaces that grant access to all authenticated users — that's normal.
+You should see no `app-` projects - normaluser1 isn't in any project-specific groups. You may see one or two system namespaces that grant access to all authenticated users - that's normal.
 
 **Test as a fancy developer:**
 
@@ -485,7 +485,7 @@ You can immediately see that `ose-teamed-app` has the `edit` role in `app-dev`. 
 
 image::ldap-rolebindings-app-prod.png[RoleBindings for app-prod showing ose-fancy-dev with edit and ose-teamed-app with view]
 
-Notice the separation of privileges at a glance — `ose-fancy-dev` has `edit` access to production while `ose-teamed-app` only has `view`. This is the kind of access review that the console makes much faster than parsing CLI output.
+Notice the separation of privileges at a glance - `ose-fancy-dev` has `edit` access to production while `ose-teamed-app` only has `view`. This is the kind of access review that the console makes much faster than parsing CLI output.
 
 === Step 9: Test Project Permissions
 
@@ -587,7 +587,7 @@ Output: `yes`
 
 **In production, always remove kubeadmin:**
 
-After verifying your identity provider works and granting cluster-admin to at least one LDAP/OIDC user, delete the kubeadmin secret from the `kube-system` namespace. This removes the bootstrap account and ensures all cluster access goes through your enterprise identity provider. On this workshop cluster, kubeadmin has already been removed — you're using the `admin` HTPasswd account instead.
+After verifying your identity provider works and granting cluster-admin to at least one LDAP/OIDC user, delete the kubeadmin secret from the `kube-system` namespace. This removes the bootstrap account and ensures all cluster access goes through your enterprise identity provider. On this workshop cluster, kubeadmin has already been removed - you're using the `admin` HTPasswd account instead.
 
 **Automate LDAP group sync with CronJob:**
 

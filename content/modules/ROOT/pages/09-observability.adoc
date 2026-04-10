@@ -12,7 +12,7 @@ In this module you'll explore the metrics and alerting that's already running (P
 
 == Built-in Metrics with Prometheus
 
-OpenShift ships with a fully managed Prometheus stack — no installation required. It collects metrics from every component in the cluster.
+OpenShift ships with a fully managed Prometheus stack - no installation required. It collects metrics from every component in the cluster.
 
 === Explore Cluster Metrics
 
@@ -30,7 +30,7 @@ Query cluster CPU usage using the console metrics viewer:
 3. Enter the query: `cluster:cpu_usage_cores:sum`
 4. Click **Run Queries**
 
-You'll see a time-series graph showing cluster CPU usage over time — far more useful than a point-in-time number.
+You'll see a time-series graph showing cluster CPU usage over time - far more useful than a point-in-time number.
 
 image::observe-metrics-query.png[Observe Metrics page showing cluster CPU usage query result]
 
@@ -61,7 +61,7 @@ image::observe-dashboards-list.png[Observe Dashboards showing Kubernetes Compute
 
 === User Workload Monitoring
 
-OpenShift can also scrape metrics from your own applications. User workload monitoring is not enabled by default — it has been pre-enabled on this workshop cluster. Verify it's running:
+OpenShift can also scrape metrics from your own applications. User workload monitoring is not enabled by default - it has been pre-enabled on this workshop cluster. Verify it's running:
 
 [source,bash,role="execute"]
 ----
@@ -70,7 +70,7 @@ oc get pods -n openshift-user-workload-monitoring
 
 If pods are running, any application that exposes a `/metrics` endpoint can be scraped by creating a `ServiceMonitor` or `PodMonitor` resource.
 
-NOTE: This is already enabled on your workshop cluster — you don't need to run this. On your own cluster, you would enable it with:
+NOTE: This is already enabled on your workshop cluster - you don't need to run this. On your own cluster, you would enable it with:
 
 [source,bash,role="copypaste"]
 ----
@@ -86,7 +86,7 @@ data:
 EOF
 ----
 
-You'll use user workload monitoring in the **Performance Tuning** module when HPA needs metrics to make scaling decisions. Any application that exposes a Prometheus `/metrics` endpoint can be scraped — you just create a `ServiceMonitor` pointing at it.
+You'll use user workload monitoring in the **Performance Tuning** module when HPA needs metrics to make scaling decisions. Any application that exposes a Prometheus `/metrics` endpoint can be scraped - you just create a `ServiceMonitor` pointing at it.
 
 == Alerting with Alertmanager
 
@@ -137,7 +137,7 @@ Verify the rule was created:
 oc get prometheusrule ops-track-alerts -n openshift-monitoring
 ----
 
-The rule exists but nothing is triggering it. Let's fix that — deploy a pod that crash-loops so you can see the alert go from inactive to pending to firing:
+The rule exists but nothing is triggering it. Let's fix that - deploy a pod that crash-loops so you can see the alert go from inactive to pending to firing:
 
 [source,bash,role="execute"]
 ----
@@ -155,7 +155,7 @@ spec:
     command: ["/bin/sh", "-c", "echo 'Starting...'; sleep 2; exit 1"]
   restartPolicy: Always
 EOF
-echo "Crash-looping pod deployed — it will restart every few seconds"
+echo "Crash-looping pod deployed - it will restart every few seconds"
 ----
 
 While the restarts accumulate, navigate to **Observe -> Alerting -> Alerting Rules** in the console and search for `HighPodRestartRate`:
@@ -166,7 +166,7 @@ Click on the rule to see its details. After about 2 minutes (once the pod has re
 
 image::alerting-rule-detail.png[HighPodRestartRate rule detail showing expression and active alerts]
 
-Now switch to the **Alerts** tab. Filter by **Alert State: Firing** — you should see `HighPodRestartRate` with `crashloop-test` as the source pod:
+Now switch to the **Alerts** tab. Filter by **Alert State: Firing** - you should see `HighPodRestartRate` with `crashloop-test` as the source pod:
 
 image::alerts-firing.png[Alerts tab showing currently firing alerts with severity and state]
 
@@ -180,7 +180,7 @@ oc delete project alert-demo --ignore-not-found --wait=false &>/dev/null &
 
 == Set Up the Logging Stack
 
-While metrics tell you *what* is happening, logs tell you *why*. OpenShift's logging stack has three layers — you need to understand each one because when logging breaks in production, you need to know which layer to troubleshoot.
+While metrics tell you *what* is happening, logs tell you *why*. OpenShift's logging stack has three layers - you need to understand each one because when logging breaks in production, you need to know which layer to troubleshoot.
 
 === The Architecture
 
@@ -219,7 +219,7 @@ spec:
 EOF
 ----
 
-Install the Loki Operator from the Software Catalog — this is the same process for any operator in OperatorHub.
+Install the Loki Operator from the Software Catalog - this is the same process for any operator in OperatorHub.
 
 ==== Loki Operator (log storage)
 
@@ -240,7 +240,7 @@ image::obs-loki-installing.png[Loki Operator installing confirmation]
 
 ==== Remaining Operators
 
-You've seen how OperatorHub works. The remaining operators use the same process — let's script them:
+You've seen how OperatorHub works. The remaining operators use the same process - let's script them:
 
 [source,bash,role="execute"]
 ----
@@ -313,7 +313,7 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
   [ $READY -eq 5 ] && break
   sleep 15; ELAPSED=$((ELAPSED+15))
 done
-[ $READY -eq 5 ] && echo "All operators installed" || echo "ERROR: Timed out — check Ecosystem -> Installed Operators"
+[ $READY -eq 5 ] && echo "All operators installed" || echo "ERROR: Timed out - check Ecosystem -> Installed Operators"
 ----
 
 === Configure Log Storage (Loki + S3)
@@ -343,7 +343,7 @@ Wait for the bucket to be provisioned:
 oc wait --for=jsonpath='{.status.phase}'=Bound obc/loki-bucket -n openshift-logging --timeout=60s
 ----
 
-Now extract the S3 credentials, create the CA cert ConfigMap, and deploy the LokiStack — all in one block so the variables stay in scope:
+Now extract the S3 credentials, create the CA cert ConfigMap, and deploy the LokiStack - all in one block so the variables stay in scope:
 
 [source,bash,role="execute"]
 ----
@@ -383,9 +383,9 @@ metadata:
   namespace: openshift-logging
 spec:
   managementState: Managed
-  size: 1x.extra-small              # smallest size — scale up for production
+  size: 1x.extra-small              # smallest size - scale up for production
   replication:
-    factor: 1                        # single replica — matches compact cluster sizing
+    factor: 1                        # single replica - matches compact cluster sizing
   storage:
     schemas:
     - effectiveDate: '2024-10-01'
@@ -399,8 +399,8 @@ spec:
   limits:
     global:
       ingestion:
-        ingestionRate: 16            # MB/sec — default 2 is too low for busy clusters
-        ingestionBurstSize: 32       # MB — must exceed largest single push request
+        ingestionRate: 16            # MB/sec - default 2 is too low for busy clusters
+        ingestionBurstSize: 32       # MB - must exceed largest single push request
   tenants:
     mode: openshift-logging          # multi-tenant: separates app, infra, and audit logs
 EOF
@@ -408,7 +408,7 @@ EOF
 
 === Set Up Log Collection
 
-The ClusterLogForwarder tells Vector (the collector) what to collect and where to send it. The collector runs as a DaemonSet — one pod per node — so it captures logs from every container on every node.
+The ClusterLogForwarder tells Vector (the collector) what to collect and where to send it. The collector runs as a DaemonSet - one pod per node - so it captures logs from every container on every node.
 
 Create the collector service account with the required permissions:
 
@@ -434,7 +434,7 @@ done
 echo "CA bundle ready"
 ----
 
-Create the ClusterLogForwarder — this defines the pipeline:
+Create the ClusterLogForwarder - this defines the pipeline:
 
 [source,bash,role="execute"]
 ----
@@ -519,9 +519,9 @@ Navigate to **Observe -> Logs** in the console. You'll see three log types:
 
 image::observe-logs-view.png[Observe Logs view showing infrastructure logs with severity filter]
 
-* **Application** — Logs from user workloads
-* **Infrastructure** — Logs from OpenShift components
-* **Audit** — Kubernetes API audit logs
+* **Application** - Logs from user workloads
+* **Infrastructure** - Logs from OpenShift components
+* **Audit** - Kubernetes API audit logs
 
 image::appinfraaudit.png[Log type selector]
 
@@ -533,9 +533,9 @@ Filter by severity (Critical, Error, Warning, Info, Debug):
 
 image::severity.png[Severity filter]
 
-Try it now: select **Infrastructure** logs, then filter by severity **Warning** or **Error**. These are the log entries that matter during an incident — pod evictions, OOM kills, certificate expiry warnings. If you've completed the **Application Management** module, switch to **Application** logs and select the `app-management` namespace to find your application's output.
+Try it now: select **Infrastructure** logs, then filter by severity **Warning** or **Error**. These are the log entries that matter during an incident - pod evictions, OOM kills, certificate expiry warnings. If you've completed the **Application Management** module, switch to **Application** logs and select the `app-management` namespace to find your application's output.
 
-The histogram at the top shows log volume over time — spikes in the error count correlate with incidents. Click on a spike to zoom into that time window.
+The histogram at the top shows log volume over time - spikes in the error count correlate with incidents. Click on a spike to zoom into that time window.
 
 image::histogram.png[Log histogram]
 
@@ -546,15 +546,15 @@ It may take 1-2 minutes for logs to start appearing after the collector pods are
 
 == OpenTelemetry for Distributed Tracing
 
-Metrics tell you *what* is happening. Logs tell you *why*. **Traces** tell you *where* — when a request crosses multiple microservices, traces show the exact path and timing across every service. If a user reports "checkout is slow", a trace shows you: frontend (2ms) → API gateway (5ms) → inventory service (800ms) → payment (3ms) — so you instantly see inventory is the bottleneck.
+Metrics tell you *what* is happening. Logs tell you *why*. **Traces** tell you *where* - when a request crosses multiple microservices, traces show the exact path and timing across every service. If a user reports "checkout is slow", a trace shows you: frontend (2ms) → API gateway (5ms) → inventory service (800ms) → payment (3ms) - so you instantly see inventory is the bottleneck.
 
-Developers instrument their apps with OpenTelemetry SDKs, but ops teams own the tracing infrastructure — deploying the collector, managing the storage backend, and making traces visible in the console.
+Developers instrument their apps with OpenTelemetry SDKs, but ops teams own the tracing infrastructure - deploying the collector, managing the storage backend, and making traces visible in the console.
 
 The Tempo and OpenTelemetry operators were already installed in the scripted block earlier. Let's deploy the tracing backend.
 
 === Deploy Tempo (Trace Storage)
 
-Tempo is the backend that stores and indexes traces — similar to how Loki stores logs. We'll use TempoMonolithic, a single-binary deployment suitable for workshops and small clusters.
+Tempo is the backend that stores and indexes traces - similar to how Loki stores logs. We'll use TempoMonolithic, a single-binary deployment suitable for workshops and small clusters.
 
 Create the namespace and deploy TempoMonolithic with multi-tenancy enabled:
 
@@ -585,7 +585,7 @@ spec:
 EOF
 ----
 
-NOTE: Multi-tenancy is required for the console Traces UI to detect the Tempo instance. The `openshift` mode uses OpenShift's built-in authentication — no external OIDC setup needed.
+NOTE: Multi-tenancy is required for the console Traces UI to detect the Tempo instance. The `openshift` mode uses OpenShift's built-in authentication - no external OIDC setup needed.
 
 Wait for Tempo to be ready:
 
@@ -664,7 +664,7 @@ EOF
 
 === Deploy the OpenTelemetry Collector
 
-The collector is the central receiving station for trace data. Apps send traces to the collector, and the collector forwards them to Tempo for storage. Think of it like Vector for logs — a pipeline component that sits between producers and storage.
+The collector is the central receiving station for trace data. Apps send traces to the collector, and the collector forwards them to Tempo for storage. Think of it like Vector for logs - a pipeline component that sits between producers and storage.
 
 [source,bash,role="execute"]
 ----
@@ -742,7 +742,7 @@ spec:
 EOF
 ----
 
-You may see a console notification to refresh — click **Refresh** to reload.
+You may see a console notification to refresh - click **Refresh** to reload.
 
 === Send a Test Trace
 
@@ -777,7 +777,7 @@ curl -s -X POST http://otel-collector.tracing-system.svc:4318/v1/traces \
 '
 ----
 
-This simulates what an instrumented application does — sends a span describing a single operation (`GET /api/weather`) with timing data.
+This simulates what an instrumented application does - sends a span describing a single operation (`GET /api/weather`) with timing data.
 
 === View Traces in the Console
 
@@ -785,11 +785,11 @@ Navigate to **Observe -> Traces** in the console. Select the Tempo instance (`tr
 
 image::otel-traces-view.png[Observe Traces view showing workshop-demo trace with scatter graph]
 
-You should see the `workshop-demo` trace. Click on it to see the trace detail view — a timing waterfall showing each span:
+You should see the `workshop-demo` trace. Click on it to see the trace detail view - a timing waterfall showing each span:
 
 image::otel-trace-detail.png[Trace detail view showing GET /api/weather span with 500ms duration]
 
-With a single service this shows one span. In a real microservices application, you'd see multiple spans stacked in a waterfall — frontend → API → database — making it immediately obvious where latency is coming from.
+With a single service this shows one span. In a real microservices application, you'd see multiple spans stacked in a waterfall - frontend → API → database - making it immediately obvious where latency is coming from.
 
 The collector is now ready for production use. Developers point their apps at `otel-collector.tracing-system.svc:4317` using OpenTelemetry SDKs, and traces automatically appear here.
 
@@ -813,7 +813,7 @@ bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showr
 * How to deploy the OpenTelemetry tracing pipeline (Tempo + OTel Collector)
 * How to view distributed traces in the console
 
-Together, metrics, logs, and traces give you the **three pillars of observability** — each answers a different question about your cluster and workloads.
+Together, metrics, logs, and traces give you the **three pillars of observability** - each answers a different question about your cluster and workloads.
 
 **Key operational commands:**
 

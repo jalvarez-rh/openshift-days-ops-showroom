@@ -6,10 +6,10 @@
 === Module Overview
 
 **Duration:** 30 minutes +
-**Format:** Hands-on Lab — Real Problem Solving +
+**Format:** Hands-on Lab - Real Problem Solving +
 **Audience:** IT Operations, SRE, Platform Engineers
 
-Your cluster is running a weather application made up of several microservices. Some of them have just broken. Your job is to diagnose and fix each one — these are the same kinds of issues that generate real support tickets.
+Your cluster is running a weather application made up of several microservices. Some of them have just broken. Your job is to diagnose and fix each one - these are the same kinds of issues that generate real support tickets.
 
 === Learning Objectives
 
@@ -57,12 +57,12 @@ Switch to the **OCP Console** tab and navigate to **Workloads -> Pods** (select 
 
 image::broken-pods-triage.png[Pod list showing multiple failure states - ImagePullBackOff CrashLoopBackOff and CreateContainerConfigError]
 
-* **Red** — `weather-frontend` in `ImagePullBackOff`, `weather-api` in `CrashLoopBackOff`
-* **Yellow** — `weather-backend` in `CreateContainerConfigError`
-* **Green** — `weather-proxy` shows `Running` (but has a hidden issue)
-* **Missing** — `weather-cache` doesn't appear at all
+* **Red** - `weather-frontend` in `ImagePullBackOff`, `weather-api` in `CrashLoopBackOff`
+* **Yellow** - `weather-backend` in `CreateContainerConfigError`
+* **Green** - `weather-proxy` shows `Running` (but has a hidden issue)
+* **Missing** - `weather-cache` doesn't appear at all
 
-This is how real incident triage works — visual scanning of pod status to quickly identify what needs attention.
+This is how real incident triage works - visual scanning of pod status to quickly identify what needs attention.
 
 You can also verify via CLI:
 
@@ -71,7 +71,7 @@ You can also verify via CLI:
 oc get pods -n ops-track-demo
 ----
 
-NOTE: You might notice `weather-cache` is missing from the pod list — that's one of the problems to investigate. Also, `weather-proxy` shows Running but has its own issue.
+NOTE: You might notice `weather-cache` is missing from the pod list - that's one of the problems to investigate. Also, `weather-proxy` shows Running but has its own issue.
 
 **Your mission:** Fix all five.
 
@@ -81,7 +81,7 @@ NOTE: You might notice `weather-cache` is missing from the pod list — that's o
 
 ==== Diagnose
 
-In the **OCP Console**, click on the `weather-frontend` pod. The **Events** tab at the bottom shows the error with colour-coded severity — you'll see the image pull failure immediately.
+In the **OCP Console**, click on the `weather-frontend` pod. The **Events** tab at the bottom shows the error with colour-coded severity - you'll see the image pull failure immediately.
 
 image::debugging-frontend-events.png[weather-frontend pod Events tab showing ImagePullBackOff error]
 
@@ -192,7 +192,7 @@ Let's also check via CLI:
 oc get deployment weather-cache -n ops-track-demo
 ----
 
-It shows `0/1` ready — the pod was never created. When a pod can't even be created, check the **ReplicaSet** events:
+It shows `0/1` ready - the pod was never created. When a pod can't even be created, check the **ReplicaSet** events:
 
 [source,bash,role="execute"]
 ----
@@ -205,7 +205,7 @@ You should see:
 Warning  FailedCreate  ...  maximum memory usage per Container is 2Gi, but limit is 1Ti
 ----
 
-A `LimitRange` in the namespace caps containers at 2Gi memory, but the deployment requests `512Gi` (a typo — should be `512Mi`). Let's confirm:
+A `LimitRange` in the namespace caps containers at 2Gi memory, but the deployment requests `512Gi` (a typo - should be `512Mi`). Let's confirm:
 
 [source,bash,role="execute"]
 ----
@@ -219,7 +219,7 @@ oc get limitrange -n ops-track-demo -o yaml | grep -A4 "max:"
 
 ==== Fix
 
-Fix the memory typo — change `512Gi` to `512Mi` and `1Ti` to `1Gi`:
+Fix the memory typo - change `512Gi` to `512Mi` and `1Ti` to `1Gi`:
 
 [source,bash,role="execute"]
 ----
@@ -271,7 +271,7 @@ oc create configmap weather-config \
   -n ops-track-demo
 ----
 
-TIP: You can verify the ConfigMap in the console at **Workloads > ConfigMaps** (project: `ops-track-demo`) — click `weather-config` to see its keys and values.
+TIP: You can verify the ConfigMap in the console at **Workloads > ConfigMaps** (project: `ops-track-demo`) - click `weather-config` to see its keys and values.
 
 Restart the pod to pick up the new ConfigMap:
 
@@ -309,7 +309,7 @@ TIP: In the console, click the weather-backend pod and select the **Environment*
 
 ==== Diagnose
 
-This pod is `Running` — so what's wrong? In the **OCP Console**, navigate to **Networking -> Services** (project: `ops-track-demo`) and click `weather-proxy`. The **Pods** tab shows **0 Pods** — immediately revealing that the service can't find any matching pods.
+This pod is `Running` - so what's wrong? In the **OCP Console**, navigate to **Networking -> Services** (project: `ops-track-demo`) and click `weather-proxy`. The **Pods** tab shows **0 Pods** - immediately revealing that the service can't find any matching pods.
 
 image::debugging-proxy-service-no-pods.png[weather-proxy Service showing 0 Pods due to selector mismatch]
 
@@ -355,7 +355,7 @@ You should now see the pod's IP in the `ENDPOINTS` column. Traffic will flow to 
 
 === All Fixed
 
-Switch to the **OCP Console** tab — **Workloads -> Pods** (project: `ops-track-demo`). All five pods should now show green `Running` status. Compare this to the red/orange/yellow view you saw at the start — that visual progression is the troubleshooting workflow in action.
+Switch to the **OCP Console** tab - **Workloads -> Pods** (project: `ops-track-demo`). All five pods should now show green `Running` status. Compare this to the red/orange/yellow view you saw at the start - that visual progression is the troubleshooting workflow in action.
 
 image::debugging-all-fixed.png[All five weather pods showing green Running status]
 
@@ -418,20 +418,20 @@ weather-proxy-xxxxx                 1/1     Running   0          5m
 
 You diagnosed and fixed five common OpenShift issues:
 
-* **ImagePullBackOff** — wrong image tag (`9.9` doesn't exist) → `oc set image`
-* **CrashLoopBackOff** — missing config file → create ConfigMap + volume mount
-* **Resource constraint** — memory typo exceeded LimitRange → `oc set resources`
-* **CreateContainerConfigError** — missing ConfigMap → `oc create configmap`
-* **Service selector mismatch** — typo in selector → `oc patch svc`
+* **ImagePullBackOff** - wrong image tag (`9.9` doesn't exist) → `oc set image`
+* **CrashLoopBackOff** - missing config file → create ConfigMap + volume mount
+* **Resource constraint** - memory typo exceeded LimitRange → `oc set resources`
+* **CreateContainerConfigError** - missing ConfigMap → `oc create configmap`
+* **Service selector mismatch** - typo in selector → `oc patch svc`
 
 The pattern is always the same: **check status → describe pod/replicaset → read logs/events → fix → verify.**
 
 === Cleanup
 
-NOTE: If the **Developer Hub** module is part of your workshop, **skip this cleanup** — it uses the weather app pods in `ops-track-demo` to demonstrate the Kubernetes plugin.
+NOTE: If the **Developer Hub** module is part of your workshop, **skip this cleanup** - it uses the weather app pods in `ops-track-demo` to demonstrate the Kubernetes plugin.
 
 [source,bash,role="execute"]
 ----
 oc delete namespace ops-track-demo --ignore-not-found --wait=false
-echo "Cleanup running in background — you can continue to the next module"
+echo "Cleanup running in background - you can continue to the next module"
 ----

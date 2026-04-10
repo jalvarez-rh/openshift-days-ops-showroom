@@ -5,9 +5,9 @@
 
 == The Scenario
 
-Some workloads can't be containerized yet — databases, middleware, Windows services. OpenShift Virtualization lets you run those VMs alongside containers on the same platform using KubeVirt (CNCF project, built on RHEL KVM). Same scheduler, same networking, same monitoring, same RBAC, same `oc` commands.
+Some workloads can't be containerized yet - databases, middleware, Windows services. OpenShift Virtualization lets you run those VMs alongside containers on the same platform using KubeVirt (CNCF project, built on RHEL KVM). Same scheduler, same networking, same monitoring, same RBAC, same `oc` commands.
 
-In this module you'll create a VM from the console, see how it's really just a pod underneath, live migrate it between nodes, clone it, and take snapshots — all with the same tools you use for containers.
+In this module you'll create a VM from the console, see how it's really just a pod underneath, live migrate it between nodes, clone it, and take snapshots - all with the same tools you use for containers.
 
 === Prerequisites Check
 
@@ -34,12 +34,12 @@ First, create a project for this module:
 oc new-project vm-demo
 ----
 
-Now create a VM using the console — the same cloud-style experience your teams get in AWS or Azure.
+Now create a VM using the console - the same cloud-style experience your teams get in AWS or Azure.
 
 ==== Step 1: Open the Create Wizard
 
 1. In the OpenShift console, switch to the **Fleet Virtualization** perspective from the top-left dropdown
-2. Verify the **Project** dropdown at the top shows `vm-demo` — if not, select it now
+2. Verify the **Project** dropdown at the top shows `vm-demo` - if not, select it now
 3. Click the **Create** dropdown and select **From InstanceType**
 
 image::virt-create-dropdown.png[Create VirtualMachine dropdown showing From InstanceType option]
@@ -49,7 +49,7 @@ image::virt-create-dropdown.png[Create VirtualMachine dropdown showing From Inst
 1. At the top of the wizard, select the **Red Hat Enterprise Linux 9** boot source from the volume list
 2. Under **Select InstanceType**, choose **Red Hat provided** -> **General Purpose** -> **medium: 1 CPUs, 4 GiB Memory**
 
-OpenShift Virtualization provides **InstanceTypes** — predefined compute profiles similar to cloud instance families:
+OpenShift Virtualization provides **InstanceTypes** - predefined compute profiles similar to cloud instance families:
 
 [cols="1,2"]
 |===
@@ -87,7 +87,7 @@ Click **Open web console** to open the VM console in a new window:
 
 image::virt-open-web-console.png[Open web console link]
 
-The **Guest login credentials** are displayed at the top of the console — use these to log in:
+The **Guest login credentials** are displayed at the top of the console - use these to log in:
 
 image::virt-console-creds.png[VNC console with guest credentials shown at top]
 
@@ -95,7 +95,7 @@ Pick a size, pick a boot image, deploy. No YAML needed.
 
 === It's Just a Pod
 
-This is the key insight for operations teams. Your VM runs inside a `virt-launcher` pod — which means everything you already know about managing pods applies to VMs. Same scheduler, same RBAC, same resource quotas, same `oc` commands. You don't need separate tools, separate teams, or separate runbooks for VMs vs containers:
+This is the key insight for operations teams. Your VM runs inside a `virt-launcher` pod - which means everything you already know about managing pods applies to VMs. Same scheduler, same RBAC, same resource quotas, same `oc` commands. You don't need separate tools, separate teams, or separate runbooks for VMs vs containers:
 
 [source,bash,role="execute"]
 ----
@@ -120,7 +120,7 @@ oc describe pod -l vm.kubevirt.io/name=rhel9-vm -n vm-demo | tail -10
 
 === Unified Monitoring
 
-VM metrics flow into the same Prometheus stack as your containers — one dashboard for everything. No need for a separate monitoring tool for your VMs.
+VM metrics flow into the same Prometheus stack as your containers - one dashboard for everything. No need for a separate monitoring tool for your VMs.
 
 On the VM details page, click the **Metrics** tab to see:
 
@@ -132,7 +132,7 @@ On the VM details page, click the **Metrics** tab to see:
 
 image::virt-metrics-tab.png[VM Metrics tab showing Memory CPU and Storage graphs]
 
-Or query from CLI — the VM uses resources just like any pod:
+Or query from CLI - the VM uses resources just like any pod:
 
 [source,bash,role="execute"]
 ----
@@ -141,7 +141,7 @@ oc adm top pods -n vm-demo
 
 === Expose the VM (Same Networking as Containers)
 
-VMs get pod IPs on the same SDN as containers — same Services, same Routes, same NetworkPolicies. One networking model for VMs and containers:
+VMs get pod IPs on the same SDN as containers - same Services, same Routes, same NetworkPolicies. One networking model for VMs and containers:
 
 [source,bash,role="execute"]
 ----
@@ -172,9 +172,9 @@ EOF
 oc get svc rhel9-vm-ssh -n vm-demo
 ----
 
-The VM is now reachable via the service — the same way you'd expose a container. Same label selectors, same service types, same networking model.
+The VM is now reachable via the service - the same way you'd expose a container. Same label selectors, same service types, same networking model.
 
-For VMs running web applications (Apache, IIS, Tomcat), you'd create a Service on port 80/443 and a Route with TLS edge termination — the same workflow you use for containers. When migrating multi-tier applications, move the VMs with MTV, wire them up with Services and Routes, and they're live on OpenShift without changing the application.
+For VMs running web applications (Apache, IIS, Tomcat), you'd create a Service on port 80/443 and a Route with TLS edge termination - the same workflow you use for containers. When migrating multi-tier applications, move the VMs with MTV, wire them up with Services and Routes, and they're live on OpenShift without changing the application.
 
 == VM Lifecycle
 
@@ -184,7 +184,7 @@ This is the feature that makes OpenShift Virtualization production-ready. When y
 
 ==== Step 1: Prepare for Migration
 
-Live migration requires compatible CPU features on the source and target nodes. Workshop clusters can have mixed Intel and AMD nodes — VMs can only migrate between nodes with the same CPU vendor. This script detects your VM's CPU vendor and ensures it's on a node where migration is possible:
+Live migration requires compatible CPU features on the source and target nodes. Workshop clusters can have mixed Intel and AMD nodes - VMs can only migrate between nodes with the same CPU vendor. This script detects your VM's CPU vendor and ensures it's on a node where migration is possible:
 
 [source,bash,role="execute"]
 ----
@@ -198,10 +198,10 @@ if [ "$INTEL_COUNT" -ge 2 ]; then VENDOR="Intel"
 elif [ "$AMD_COUNT" -ge 2 ]; then VENDOR="AMD"
 else VENDOR="$CURRENT_VENDOR"; fi
 
-echo "Cluster has $INTEL_COUNT Intel and $AMD_COUNT AMD nodes — VM is on $CURRENT_VENDOR, pinning to $VENDOR"
+echo "Cluster has $INTEL_COUNT Intel and $AMD_COUNT AMD nodes - VM is on $CURRENT_VENDOR, pinning to $VENDOR"
 
 if [ "$CURRENT_VENDOR" != "$VENDOR" ]; then
-  echo "VM is on $CURRENT_VENDOR node — moving to $VENDOR..."
+  echo "VM is on $CURRENT_VENDOR node - moving to $VENDOR..."
   oc patch vm rhel9-vm -n vm-demo --type=merge -p "{\"spec\":{\"runStrategy\":\"Halted\"}}"
   until [ "$(oc get vm rhel9-vm -n vm-demo -o jsonpath='{.status.printableStatus}')" = "Stopped" ]; do sleep 5; done
   oc patch vm rhel9-vm -n vm-demo --type=merge -p "{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"cpu-vendor.node.kubevirt.io/${VENDOR}\":\"true\"}}}}}"
@@ -209,7 +209,7 @@ if [ "$CURRENT_VENDOR" != "$VENDOR" ]; then
   until oc get vmi rhel9-vm -n vm-demo 2>/dev/null | grep -q Running; do sleep 10; done
 fi
 
-oc get vmi rhel9-vm -n vm-demo -o jsonpath='Ready — Node: {.status.nodeName}' && echo ""
+oc get vmi rhel9-vm -n vm-demo -o jsonpath='Ready - Node: {.status.nodeName}' && echo ""
 ----
 
 NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
@@ -229,7 +229,7 @@ oc get vmi rhel9-vm -n vm-demo -o jsonpath='Node: {.status.nodeName}' && echo ""
 
 1. On the VM details page, click the **Actions** dropdown in the top-right corner
 2. Hover over **Migration** to expand the submenu
-3. Select **Compute** — this migrates the VM's running state (CPU/memory) to a different node
+3. Select **Compute** - this migrates the VM's running state (CPU/memory) to a different node
 
 image::virt-actions-migrate.png[Actions dropdown showing Migration submenu with Compute and Storage options]
 
@@ -243,7 +243,7 @@ The VM status changes to **Migrating** while the live migration is in progress:
 
 image::virt-migrating-status.png[VM details showing Migrating status]
 
-The migration completes quickly — typically within 30 seconds. Once the status returns to **Running**, verify the node changed:
+The migration completes quickly - typically within 30 seconds. Once the status returns to **Running**, verify the node changed:
 
 [source,bash,role="execute"]
 ----
@@ -254,7 +254,7 @@ The VM moved while still running. No downtime, no reconnection needed.
 
 === Clone a VM
 
-Need another copy of a VM — for testing, dev environments, or scaling out? Clone it. This creates a full copy of the VM's disk and configuration.
+Need another copy of a VM - for testing, dev environments, or scaling out? Clone it. This creates a full copy of the VM's disk and configuration.
 
 ==== Step 1: Start the Clone
 
@@ -278,13 +278,13 @@ Once complete, the console navigates to the clone's details page. You'll see bot
 
 image::virt-clone-complete.png[Clone complete showing both rhel9-vm and rhel9-vm-clone in the VM list]
 
-The clone has its own independent disk — changes to one don't affect the other. This is how you'd create golden images: configure a VM exactly how you want it, then clone it for each environment.
+The clone has its own independent disk - changes to one don't affect the other. This is how you'd create golden images: configure a VM exactly how you want it, then clone it for each environment.
 
 IMPORTANT: Click back to **rhel9-vm** in the left sidebar before continuing. The next steps (snapshot and restore) should be done on the original VM, not the clone.
 
 === Snapshots
 
-Every operations team has been burned by a patch that broke something. Snapshots give you a safety net — capture the VM's disk and configuration before a change, and roll back in seconds if it goes wrong.
+Every operations team has been burned by a patch that broke something. Snapshots give you a safety net - capture the VM's disk and configuration before a change, and roll back in seconds if it goes wrong.
 
 ==== Step 1: Take a Snapshot
 
@@ -296,7 +296,7 @@ image::virt-actions-snapshot.png[Actions dropdown with Take snapshot option]
 
 image::virt-snapshot-config.png[Take snapshot dialog with default name and disk selection]
 
-NOTE: The warning about `cloudinitdisk` not being included is expected — cloud-init only runs on first boot and doesn't need to be captured.
+NOTE: The warning about `cloudinitdisk` not being included is expected - cloud-init only runs on first boot and doesn't need to be captured.
 
 ==== Step 2: Verify the Snapshot
 
@@ -306,18 +306,18 @@ image::virt-snapshot-ready.png[Snapshots tab showing rhel9-vm-snapshot with Read
 
 ==== Step 3: Break Something
 
-The snapshot is your safety net — let's prove it works by breaking the VM. Open the **Console** tab and log in with the guest credentials shown at the top. Then create a file and delete something:
+The snapshot is your safety net - let's prove it works by breaking the VM. Open the **Console** tab and log in with the guest credentials shown at the top. Then create a file and delete something:
 
 ----
 touch /home/cloud-user/important-data.txt
 sudo rm /etc/motd
 ----
 
-Now the VM has changed — a new file exists, a system file is gone. Let's restore to the snapshot and prove both changes are reverted.
+Now the VM has changed - a new file exists, a system file is gone. Let's restore to the snapshot and prove both changes are reverted.
 
 ==== Step 4: Restore from Snapshot
 
-1. **Stop** the VM — click the **Stop** button (square icon) in the top-right action buttons
+1. **Stop** the VM - click the **Stop** button (square icon) in the top-right action buttons
 
 2. Once the VM shows **Stopped**, go to the **Snapshots** tab, click the kebab menu (three dots) next to the snapshot, and select **Restore VirtualMachine from snapshot**
 
@@ -336,7 +336,7 @@ ls /home/cloud-user/important-data.txt
 cat /etc/motd
 ----
 
-The file you created is gone and `/etc/motd` is back. The disk was restored to the exact state when you took the snapshot — this is how you roll back a failed OS patch or a broken config change without rebuilding from scratch.
+The file you created is gone and `/etc/motd` is back. The disk was restored to the exact state when you took the snapshot - this is how you roll back a failed OS patch or a broken config change without rebuilding from scratch.
 
 == Cleanup & Summary
 
@@ -350,7 +350,7 @@ The file you created is gone and `/etc/motd` is back. The disk was restored to t
 |Same `oc` commands, same scheduler, same RBAC
 
 |**InstanceTypes**
-|Cloud-style provisioning — pick a size, pick an image, deploy
+|Cloud-style provisioning - pick a size, pick an image, deploy
 
 |**Same networking**
 |Services and Routes work for VMs and containers
@@ -368,7 +368,7 @@ The file you created is gone and `/etc/motd` is back. The disk was restored to t
 |Point-in-time rollback before patches or upgrades
 |===
 
-**The value:** Run VMs and containers side-by-side on one platform. One set of tools, one set of skills. Migrate existing VMs with MTV when ready, or run them indefinitely — OpenShift supports both. Windows Server is SVVP-certified, and RHEL/Fedora/CentOS boot from pre-cached images in seconds.
+**The value:** Run VMs and containers side-by-side on one platform. One set of tools, one set of skills. Migrate existing VMs with MTV when ready, or run them indefinitely - OpenShift supports both. Windows Server is SVVP-certified, and RHEL/Fedora/CentOS boot from pre-cached images in seconds.
 
 === Cleanup
 
@@ -382,7 +382,7 @@ Deleting VM disks and namespaces takes a couple of minutes. This runs in the bac
   sleep 10
   oc delete namespace vm-demo --ignore-not-found --wait=false
 ) &>/dev/null &
-echo "Cleanup running in background — you can continue to the next module"
+echo "Cleanup running in background - you can continue to the next module"
 ----
 
 === Additional Resources

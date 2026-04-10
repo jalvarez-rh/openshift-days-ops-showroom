@@ -9,11 +9,11 @@ How many times a week does someone message you: _"Is my app running?"_ or _"Can 
 
 Red Hat Developer Hub (RHDH) is a developer portal based on Backstage. It gives you:
 
-* **Software Catalog** — a single place to register every service, API, and library your teams run. Developers find what exists, who owns it, and what state it's in.
-* **Software Templates** — self-service "Create New App" workflows that provision namespaces, RBAC, pipelines, and git repos using patterns you define as an ops team.
-* **Plugins** — connect the catalog to live systems (Kubernetes, ArgoCD, Tekton, etc.) so developers see real-time status without needing cluster access.
+* **Software Catalog** - a single place to register every service, API, and library your teams run. Developers find what exists, who owns it, and what state it's in.
+* **Software Templates** - self-service "Create New App" workflows that provision namespaces, RBAC, pipelines, and git repos using patterns you define as an ops team.
+* **Plugins** - connect the catalog to live systems (Kubernetes, ArgoCD, Tekton, etc.) so developers see real-time status without needing cluster access.
 
-In this module you'll verify the deployment, register applications in the catalog, and wire up the Kubernetes plugin so it shows real-time pod status — no `oc` access required for developers.
+In this module you'll verify the deployment, register applications in the catalog, and wire up the Kubernetes plugin so it shows real-time pod status - no `oc` access required for developers.
 
 == Verify RHDH Deployment
 
@@ -72,7 +72,7 @@ NOTE: In production, you'd also configure a GitHub integration with an access to
 
 === Step 3: Access the Portal
 
-Click the **Developer Hub** tab at the top of Showroom. You'll see the login page — select **Guest** and click **Enter**.
+Click the **Developer Hub** tab at the top of Showroom. You'll see the login page - select **Guest** and click **Enter**.
 
 image::rhdh-home-page.png[Developer Hub home page]
 
@@ -131,9 +131,9 @@ oc describe backstage developer-hub -n backstage
 
 === Step 5: Register an Application in the Catalog
 
-The catalog is the heart of Developer Hub — a unified view of every service your organization runs. Right now it's empty because nobody has registered anything. Let's fix that.
+The catalog is the heart of Developer Hub - a unified view of every service your organization runs. Right now it's empty because nobody has registered anything. Let's fix that.
 
-Applications are registered via `catalog-info.yaml` files — simple YAML that describes what the service is, who owns it, and where it runs. Here's what one looks like:
+Applications are registered via `catalog-info.yaml` files - simple YAML that describes what the service is, who owns it, and where it runs. Here's what one looks like:
 
 [source,yaml]
 ----
@@ -164,7 +164,7 @@ Register two applications from this workshop into the catalog:
 https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/catalog-info.yaml
 ----
 +
-3. Click **Analyze** — RHDH fetches the YAML and shows you what will be registered
+3. Click **Analyze** - RHDH fetches the YAML and shows you what will be registered
 4. Click **Import** to add them to the catalog
 
 Now click **Catalog** in the left navigation. You should see two components registered:
@@ -173,21 +173,21 @@ image::rhdh-catalog-registered.png[Developer Hub catalog showing weather-app and
 
 Click on either one to see the component overview page showing the owner, lifecycle, tags, and the OpenShift namespace annotation.
 
-In production, this catalog would contain hundreds of services across dozens of teams. Developers find services, understand who owns them, read documentation, and check deployment status — all without asking ops. When teams leave or services are deprecated, the catalog makes it visible instead of leaving orphaned workloads running in the cluster.
+In production, this catalog would contain hundreds of services across dozens of teams. Developers find services, understand who owns them, read documentation, and check deployment status - all without asking ops. When teams leave or services are deprecated, the catalog makes it visible instead of leaving orphaned workloads running in the cluster.
 
-But right now, this catalog is just a list. Click on `weather-app` — you see metadata, but nothing about what's actually running in the cluster. A developer looking at this would still have to ask you: _"Is my app running? How many pods are up? Any restarts?"_
+But right now, this catalog is just a list. Click on `weather-app` - you see metadata, but nothing about what's actually running in the cluster. A developer looking at this would still have to ask you: _"Is my app running? How many pods are up? Any restarts?"_
 
 Let's fix that.
 
 == Hands-On: Enable the Kubernetes Plugin
 
-This is where RHDH goes from a static catalog to a **live operational dashboard**. We're going to enable the Kubernetes plugin so that when a developer clicks on a service in the catalog, they see real-time pod status, resource usage, and deployment health — without needing `oc` access, without a ticket, without asking anyone.
+This is where RHDH goes from a static catalog to a **live operational dashboard**. We're going to enable the Kubernetes plugin so that when a developer clicks on a service in the catalog, they see real-time pod status, resource usage, and deployment health - without needing `oc` access, without a ticket, without asking anyone.
 
 Think about how many times a week your team gets asked: _"Is my app running?"_ You're about to eliminate that question.
 
 === Step 1: Create a Service Account for RHDH
 
-RHDH needs read access to the cluster to display Kubernetes resources. We'll create a dedicated service account with **least-privilege access** — `cluster-reader`, not `cluster-admin`:
+RHDH needs read access to the cluster to display Kubernetes resources. We'll create a dedicated service account with **least-privilege access** - `cluster-reader`, not `cluster-admin`:
 
 [source,bash,role="execute"]
 ----
@@ -210,11 +210,11 @@ oc create secret generic rhdh-kubernetes-plugin-token -n backstage \
 
 === Step 2: Enable the Dynamic Plugins
 
-RHDH ships with dozens of plugins bundled in the image — they just need to be switched on. We'll enable three:
+RHDH ships with dozens of plugins bundled in the image - they just need to be switched on. We'll enable three:
 
-* **Kubernetes Backend** — connects to the cluster API to fetch pod/deployment data
-* **Kubernetes Frontend** — renders the Kubernetes tab on catalog components
-* **Topology** — provides a visual map of how application components connect
+* **Kubernetes Backend** - connects to the cluster API to fetch pod/deployment data
+* **Kubernetes Frontend** - renders the Kubernetes tab on catalog components
+* **Topology** - provides a visual map of how application components connect
 
 Create a ConfigMap that tells RHDH which plugins to activate:
 
@@ -287,7 +287,7 @@ oc patch backstage developer-hub -n backstage --type=merge -p '{
 }'
 ----
 
-The Operator sees the CR change and triggers a rolling restart — new pods with plugins enabled, old pods terminated, zero downtime. Watch it happen:
+The Operator sees the CR change and triggers a rolling restart - new pods with plugins enabled, old pods terminated, zero downtime. Watch it happen:
 
 [source,bash,role="execute"]
 ----
@@ -302,7 +302,7 @@ This takes 2-3 minutes as the init container installs the dynamic plugins before
 
 The Kubernetes plugin discovers pods by matching a label on the workloads to the `backstage.io/kubernetes-id` annotation on the catalog component. Label the weather app deployments:
 
-NOTE: This step requires the weather app deployments from the **Debugging & Troubleshooting** module to be running in `ops-track-demo`. If you haven't completed that module, you can skip this step — the catalog entry will still register, the Kubernetes tab will simply show no pods.
+NOTE: This step requires the weather app deployments from the **Debugging & Troubleshooting** module to be running in `ops-track-demo`. If you haven't completed that module, you can skip this step - the catalog entry will still register, the Kubernetes tab will simply show no pods.
 
 [source,bash,role="execute"]
 ----
@@ -323,7 +323,7 @@ Go back to the **Developer Hub** tab and click on **weather-app** in the catalog
 
 image::rhdh-kubernetes-tab.png[Kubernetes tab showing live pod status for weather-app]
 
-**This is the moment.** A developer clicks a service in the catalog and sees exactly what's running — pod count, restart history, resource usage — without `oc` access, without opening a ticket, without messaging you on Slack.
+**This is the moment.** A developer clicks a service in the catalog and sees exactly what's running - pod count, restart history, resource usage - without `oc` access, without opening a ticket, without messaging you on Slack.
 
 You configured this once. Every service in the catalog gets this for free when it has the right annotations and labels. That's the Kubernetes plugin eliminating your most common developer question: _"Is my app running?"_
 
@@ -336,31 +336,31 @@ Take a step back and look at what you configured as a platform admin:
 |What You Did |Why It Matters
 
 |**Created a scoped Service Account**
-|Least-privilege access — RHDH can read cluster state but can't modify anything
+|Least-privilege access - RHDH can read cluster state but can't modify anything
 
 |**Enabled Dynamic Plugins via ConfigMap**
-|No rebuilding images, no redeployment from scratch — just declare which plugins to activate
+|No rebuilding images, no redeployment from scratch - just declare which plugins to activate
 
 |**Configured cluster connection in app-config**
 |Centralized configuration managed through OpenShift-native ConfigMaps and Secrets
 
 |**Patched the Backstage CR**
-|The Operator handled the rolling restart — you declared intent, OpenShift did the work
+|The Operator handled the rolling restart - you declared intent, OpenShift did the work
 
 |**Labeled workloads for discovery**
 |Standard Kubernetes labels connect catalog entries to live resources
 |===
 
-Every step used OpenShift primitives you already know: Service Accounts, RBAC, ConfigMaps, Secrets, Operators, Custom Resources, and rolling deployments. RHDH isn't a black box — it's just another workload managed with the same tools you use for everything else.
+Every step used OpenShift primitives you already know: Service Accounts, RBAC, ConfigMaps, Secrets, Operators, Custom Resources, and rolling deployments. RHDH isn't a black box - it's just another workload managed with the same tools you use for everything else.
 
 == Going Further
 
 This module gave you a working RHDH with live cluster visibility. A full platform engineering implementation adds:
 
-* **Software Templates** — developers click "Create New App" and get a namespace, pipeline, git repo, and catalog entry automatically, all following ops-defined golden paths
-* **RBAC Plugin** — control who can register components, create from templates, or view specific services
-* **SSO Integration** — connect to your identity provider so developers log in with their existing credentials
-* **CI/CD Plugins** — Tekton pipeline runs and ArgoCD sync status visible directly in the catalog
-* **TechDocs** — documentation lives alongside the code and renders in the portal
+* **Software Templates** - developers click "Create New App" and get a namespace, pipeline, git repo, and catalog entry automatically, all following ops-defined golden paths
+* **RBAC Plugin** - control who can register components, create from templates, or view specific services
+* **SSO Integration** - connect to your identity provider so developers log in with their existing credentials
+* **CI/CD Plugins** - Tekton pipeline runs and ArgoCD sync status visible directly in the catalog
+* **TechDocs** - documentation lives alongside the code and renders in the portal
 
 **Interested in a deep-dive?** Ask your instructor about the **Platform Engineering with RHDH Workshop**.

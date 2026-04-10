@@ -9,7 +9,7 @@
 **Format:** Hands-on +
 **Audience:** Platform Engineers, Operations Teams, SRE
 
-As an OpenShift administrator managing multiple clusters, you need every cluster configured the same way — same quotas, same network policies, same security baselines. Making these changes manually on each cluster is slow, error-prone, and impossible to audit.
+As an OpenShift administrator managing multiple clusters, you need every cluster configured the same way - same quotas, same network policies, same security baselines. Making these changes manually on each cluster is slow, error-prone, and impossible to audit.
 
 GitOps solves this by treating cluster configuration as code in a Git repository. A tool called ArgoCD continuously watches that repository and ensures every cluster matches the desired state. If someone makes a manual change, ArgoCD detects the drift and can automatically fix it.
 
@@ -29,10 +29,10 @@ By the end of this module, you will be able to:
 
 OpenShift GitOps uses link:https://argo-cd.readthedocs.io/en/stable/[ArgoCD] to implement a continuous reconciliation loop:
 
-1. **Define** — store your desired cluster state as YAML manifests in a Git repository
-2. **Sync** — ArgoCD applies those manifests to the cluster
-3. **Detect** — ArgoCD continuously compares the live cluster state against Git
-4. **Reconcile** — if drift is detected, ArgoCD flags it as OutOfSync and can auto-heal
+1. **Define** - store your desired cluster state as YAML manifests in a Git repository
+2. **Sync** - ArgoCD applies those manifests to the cluster
+3. **Detect** - ArgoCD continuously compares the live cluster state against Git
+4. **Reconcile** - if drift is detected, ArgoCD flags it as OutOfSync and can auto-heal
 
 The result: Git becomes the single source of truth. Every change is tracked, auditable, and reversible.
 
@@ -65,7 +65,7 @@ Authorise access when prompted:
 
 image::gitops-authorize-access.png[OAuth authorize access page]
 
-NOTE: You can also open ArgoCD in a separate browser tab — look for the grid icon (nine tiles) in the OpenShift console navigation bar and select **Cluster Argo CD** under OpenShift GitOps.
+NOTE: You can also open ArgoCD in a separate browser tab - look for the grid icon (nine tiles) in the OpenShift console navigation bar and select **Cluster Argo CD** under OpenShift GitOps.
 
 **Verify from the CLI:**
 
@@ -78,14 +78,14 @@ You should see the ArgoCD server, application controller, repo server, Redis, an
 
 === Step 2: Deploy a Project Configuration from Git
 
-In production, platform teams define standard project configurations in Git — a namespace with resource quotas, default limits, and network policies. Every new team project gets the same baseline. Let's deploy one now.
+In production, platform teams define standard project configurations in Git - a namespace with resource quotas, default limits, and network policies. Every new team project gets the same baseline. Let's deploy one now.
 
 The Git repository for this workshop contains a cluster configuration bundle at `support/gitops/cluster-config/` with four resources:
 
-* **Namespace** — `gitops-managed-project` with labels for tracking
-* **ResourceQuota** — caps total CPU, memory, and pod count for the project
-* **LimitRange** — sets default CPU/memory requests and limits for containers that don't specify their own
-* **NetworkPolicy** — denies ingress from other namespaces (project isolation)
+* **Namespace** - `gitops-managed-project` with labels for tracking
+* **ResourceQuota** - caps total CPU, memory, and pod count for the project
+* **LimitRange** - sets default CPU/memory requests and limits for containers that don't specify their own
+* **NetworkPolicy** - denies ingress from other namespaces (project isolation)
 
 This is the kind of baseline every production project should have.
 
@@ -139,7 +139,7 @@ EOF
 
 **Watch ArgoCD sync:**
 
-Switch to the ArgoCD UI. You may see other applications on the dashboard — these are managed by the platform. To see only your workshop application, use the **PROJECTS** filter on the left sidebar and select **workshop**:
+Switch to the ArgoCD UI. You may see other applications on the dashboard - these are managed by the platform. To see only your workshop application, use the **PROJECTS** filter on the left sidebar and select **workshop**:
 
 image::gitops-project-filter.png[ArgoCD PROJECTS filter dropdown showing default and workshop options]
 
@@ -161,19 +161,19 @@ image::gitops-resource-tree-synced.png[ArgoCD resource tree showing managed-proj
 * `managed-project` at the centre
 * Branching out to: `default-limits` (LimitRange), `gitops-managed-project` (Namespace), `compute-quota` (ResourceQuota), `deny-from-other-namespaces` (NetworkPolicy)
 
-Each resource node shows its sync and health status with colour-coded icons. Click on any resource — for example, the **compute-quota** ResourceQuota — to open a detail panel:
+Each resource node shows its sync and health status with colour-coded icons. Click on any resource - for example, the **compute-quota** ResourceQuota - to open a detail panel:
 
 image::gitops-quota-detail.png[ArgoCD detail panel for compute-quota showing Summary and Live Manifest tabs]
 
 This panel shows:
 
-* **Summary** — kind, namespace, creation time, sync status
-* **Live Manifest** — the current state on the cluster
-* **Desired Manifest** — what's defined in Git
-* **Diff** — any differences between live and desired
-* **Events** — sync events and status changes
+* **Summary** - kind, namespace, creation time, sync status
+* **Live Manifest** - the current state on the cluster
+* **Desired Manifest** - what's defined in Git
+* **Diff** - any differences between live and desired
+* **Events** - sync events and status changes
 
-This is where you'll spend most of your time as an admin — checking that resources match their desired state and investigating when they don't.
+This is where you'll spend most of your time as an admin - checking that resources match their desired state and investigating when they don't.
 
 ==== Explore the Application Details
 
@@ -181,11 +181,11 @@ Click the **Details** button in the top toolbar. This shows the application conf
 
 image::gitops-app-details.png[ArgoCD App Details showing project workshop, repo URL, path, and sync status]
 
-* **Project** — `workshop` (our filtered workspace)
-* **Repo URL** — the Git repository ArgoCD is watching
-* **Path** — `support/gitops/cluster-config/` within that repo
-* **Target Revision** — `main` branch
-* **Status** — Synced to a specific commit
+* **Project** - `workshop` (our filtered workspace)
+* **Repo URL** - the Git repository ArgoCD is watching
+* **Path** - `support/gitops/cluster-config/` within that repo
+* **Target Revision** - `main` branch
+* **Status** - Synced to a specific commit
 
 Close the panel when done.
 
@@ -219,7 +219,7 @@ TIP: In the OpenShift console, navigate to **Home -> Projects** and select `gito
 
 === Step 3: Simulate Configuration Drift
 
-Now let's see what happens when someone makes an unauthorised manual change — the kind of thing that happens in production when someone "just needs to fix something quickly."
+Now let's see what happens when someone makes an unauthorised manual change - the kind of thing that happens in production when someone "just needs to fix something quickly."
 
 **Increase the pod quota manually:**
 
@@ -237,13 +237,13 @@ oc get resourcequota compute-quota -n gitops-managed-project -o jsonpath='{.spec
 echo
 ----
 
-Output: `100` — the manual change took effect.
+Output: `100` - the manual change took effect.
 
 **Check ArgoCD:**
 
 Go back to the ArgoCD UI. The `managed-project` application now shows **OutOfSync**. ArgoCD detected that the live cluster state no longer matches what's defined in Git.
 
-Click the tile to open the application. In the resource tree, the **ResourceQuota** node is highlighted in yellow — that's the resource that drifted:
+Click the tile to open the application. In the resource tree, the **ResourceQuota** node is highlighted in yellow - that's the resource that drifted:
 
 image::gitops-resource-tree-outofsync.png[ArgoCD resource tree showing OutOfSync status with compute-quota highlighted]
 
@@ -257,12 +257,12 @@ You'll see a side-by-side comparison showing the exact difference:
 
 image::gitops-diff-view.png[ArgoCD diff view showing pods 100 on the left vs pods 20 on the right]
 
-* The live cluster has `pods: "100"` — the manual change
-* The desired state from Git has `pods: "20"` — what it should be
+* The live cluster has `pods: "100"` - the manual change
+* The desired state from Git has `pods: "20"` - what it should be
 
 Notice that ArgoCD only flags the specific field that changed. The Namespace, LimitRange, and NetworkPolicy all show as Synced because they weren't touched.
 
-This is the power of GitOps for operations teams — across hundreds of resources, you can immediately pinpoint exactly what deviated from the baseline and when.
+This is the power of GitOps for operations teams - across hundreds of resources, you can immediately pinpoint exactly what deviated from the baseline and when.
 
 === Step 4: Restore the Desired State
 
@@ -272,9 +272,9 @@ In the ArgoCD application view, click the **Sync** button in the top toolbar, th
 
 image::gitops-sync-dialog.png[ArgoCD sync dialog showing all four resources checked for synchronization]
 
-You can leave all defaults — ArgoCD will apply every resource from Git.
+You can leave all defaults - ArgoCD will apply every resource from Git.
 
-Watch the resource tree — the ResourceQuota node will flash as it updates, then return to green (Synced):
+Watch the resource tree - the ResourceQuota node will flash as it updates, then return to green (Synced):
 
 image::gitops-resynced.png[ArgoCD resource tree back to all Synced after resync]
 
@@ -286,7 +286,7 @@ oc get resourcequota compute-quota -n gitops-managed-project -o jsonpath='{.spec
 echo
 ----
 
-Output: `20` — the pod quota is back to the value defined in Git. The unauthorised change has been reverted.
+Output: `20` - the pod quota is back to the value defined in Git. The unauthorised change has been reverted.
 
 === Step 5: Enable Self-Healing
 
@@ -300,7 +300,7 @@ oc patch application.argoproj.io managed-project -n openshift-gitops \
   --type=merge -p '{"spec":{"syncPolicy":{"automated":{"selfHeal":true}}}}'
 ----
 
-**Test it — make another manual change:**
+**Test it - make another manual change:**
 
 [source,bash,role="execute"]
 ----
@@ -317,17 +317,17 @@ oc get resourcequota compute-quota -n gitops-managed-project -o jsonpath='{.spec
 echo
 ----
 
-Output: `20` — ArgoCD automatically detected the drift and reverted it without any manual intervention.
+Output: `20` - ArgoCD automatically detected the drift and reverted it without any manual intervention.
 
 **Check the ArgoCD UI:**
 
-Go back to the ArgoCD dashboard. The `managed-project` application still shows **Synced** and **Healthy** — it briefly went OutOfSync when you made the change, then ArgoCD immediately corrected it:
+Go back to the ArgoCD dashboard. The `managed-project` application still shows **Synced** and **Healthy** - it briefly went OutOfSync when you made the change, then ArgoCD immediately corrected it:
 
 image::gitops-selfheal-synced.png[ArgoCD dashboard showing managed-project still Synced after self-heal]
 
-Click into the application and check the **Last Sync** timestamp — it will show a recent sync that was triggered by self-heal, not by you.
+Click into the application and check the **Last Sync** timestamp - it will show a recent sync that was triggered by self-heal, not by you.
 
-You can also click on the `compute-quota` ResourceQuota and look at the **Events** tab to see the sync history — you'll see ArgoCD detected the drift and automatically resynced.
+You can also click on the `compute-quota` ResourceQuota and look at the **Events** tab to see the sync history - you'll see ArgoCD detected the drift and automatically resynced.
 
 This is how production clusters stay compliant. No matter what manual changes someone makes, ArgoCD continuously enforces the configuration defined in Git.
 
@@ -335,10 +335,10 @@ This is how production clusters stay compliant. No matter what manual changes so
 
 GitOps is most valuable for:
 
-* **Multi-cluster consistency** — same configuration across dev, staging, production, and edge clusters
-* **Compliance and auditing** — every change is a Git commit with author, timestamp, and approval
-* **Disaster recovery** — rebuild a cluster's entire configuration by pointing ArgoCD at the Git repo
-* **Preventing configuration drift** — self-heal ensures manual changes don't persist
+* **Multi-cluster consistency** - same configuration across dev, staging, production, and edge clusters
+* **Compliance and auditing** - every change is a Git commit with author, timestamp, and approval
+* **Disaster recovery** - rebuild a cluster's entire configuration by pointing ArgoCD at the Git repo
+* **Preventing configuration drift** - self-heal ensures manual changes don't persist
 
 For more information, see link:https://docs.redhat.com/en/documentation/red_hat_openshift_gitops/1.19/html/understanding_openshift_gitops/index[Understanding OpenShift GitOps].
 
@@ -354,7 +354,7 @@ For more information, see link:https://docs.redhat.com/en/documentation/red_hat_
 * Resynced to restore the desired state from Git
 * Enabled self-healing so ArgoCD automatically reverts unauthorised changes
 
-**Key takeaway:** GitOps turns cluster configuration into code. Everything is in Git — tracked, auditable, and automatically enforced. If it's not in Git, it shouldn't be on the cluster.
+**Key takeaway:** GitOps turns cluster configuration into code. Everything is in Git - tracked, auditable, and automatically enforced. If it's not in Git, it shouldn't be on the cluster.
 
 === Cleanup
 
@@ -365,5 +365,5 @@ For more information, see link:https://docs.redhat.com/en/documentation/red_hat_
   oc delete appproject workshop -n openshift-gitops --ignore-not-found
   oc delete namespace gitops-managed-project --ignore-not-found
 ) &>/dev/null &
-echo "Cleanup running in background — you can continue to the next module."
+echo "Cleanup running in background - you can continue to the next module."
 ----

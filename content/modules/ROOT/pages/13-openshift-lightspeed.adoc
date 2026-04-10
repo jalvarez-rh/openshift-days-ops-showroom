@@ -186,7 +186,7 @@ In the OpenShift Lightspeed interface, click the *X* in the top right corner to 
 [quote]
 Show me the pods in the lightspeed-demo namespace
 
-The model has likely used `pods_list_in_namespace` — one of the tools provided by the MCP server, to retrieve this information. You can click on the tool to view the tool output used to answer your question.
+The model has likely used `pods_list_in_namespace` - one of the tools provided by the MCP server, to retrieve this information. You can click on the tool to view the tool output used to answer your question.
 
 image::ols-tool-output.png[OpenShift Lightspeed MCP tool output]
 
@@ -203,7 +203,7 @@ Once attached, try asking:
 [quote]
 What's wrong in this pod?
 
-OpenShift Lightspeed will analyze the pod specification to identify the issue — in this case, an invalid node selector. Additionally, it will likely propose a solution to help you fix the problem.
+OpenShift Lightspeed will analyze the pod specification to identify the issue - in this case, an invalid node selector. Additionally, it will likely propose a solution to help you fix the problem.
 
 === OpenShift Lightspeed Beyond Containers
 
@@ -213,7 +213,7 @@ OpenShift Virtualization allows you to run virtual machines on the same platform
 
 The same applies to Red Hat Advanced Cluster Management (ACM). When working across multiple clusters, resources like ManagedCluster or ManagedClusterInfo follow the same custom resource pattern, making them accessible to OpenShift Lightspeed for queries and guidance.
 
-This module concludes here, but the OpenShift Lightspeed operator will stay active for the remainder of the workshop. Feel free to continue using it as you progress through the upcoming modules — whether to clarify concepts, generate resource definitions, or assist with virtualization and multi-cluster tasks, if applicable.
+This module concludes here, but the OpenShift Lightspeed operator will stay active for the remainder of the workshop. Feel free to continue using it as you progress through the upcoming modules - whether to clarify concepts, generate resource definitions, or assist with virtualization and multi-cluster tasks, if applicable.
 
 == Summary
 

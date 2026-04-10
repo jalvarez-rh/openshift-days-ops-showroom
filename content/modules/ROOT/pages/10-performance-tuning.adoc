@@ -55,7 +55,7 @@ The app requested **2Gi memory** and **500m CPU**. That's a lot of cluster capac
 
 === Check What It Actually Uses
 
-Wait for metrics to become available (~60 seconds after pod starts). While you wait, switch to the **OCP Console** tab and navigate to **Workloads -> Pods** (project: `performance-demo`). Click the pod name and look at the **Metrics** tab — you can watch CPU and memory graphs populate in real-time.
+Wait for metrics to become available (~60 seconds after pod starts). While you wait, switch to the **OCP Console** tab and navigate to **Workloads -> Pods** (project: `performance-demo`). Click the pod name and look at the **Metrics** tab - you can watch CPU and memory graphs populate in real-time.
 
 image::perf-pod-metrics.png[Pod Metrics tab showing CPU and memory usage graphs]
 
@@ -102,7 +102,7 @@ Press `Ctrl+C` when you see `Succeeded`.
 
 === Get VPA Recommendations
 
-Create a VPA resource targeting the memory-hog deployment. We're using `updateMode: "Off"` — this means VPA will **only recommend** values, it won't change your pods. In production, you'd start with `Off` to validate recommendations, then switch to `Auto` to let VPA resize pods automatically during restarts.
+Create a VPA resource targeting the memory-hog deployment. We're using `updateMode: "Off"` - this means VPA will **only recommend** values, it won't change your pods. In production, you'd start with `Off` to validate recommendations, then switch to `Auto` to let VPA resize pods automatically during restarts.
 
 [source,bash,role="execute"]
 ----
@@ -125,7 +125,7 @@ oc get vpa memory-hog-vpa -o jsonpath='{.status.recommendation.containerRecommen
 
 NOTE: If you see no output, the VPA recommender hasn't collected enough metrics yet. Wait 30-60 seconds and run the command again.
 
-VPA recommends **~256Mi memory** instead of the 2Gi requested. That's based on actual observed usage — not guesswork.
+VPA recommends **~256Mi memory** instead of the 2Gi requested. That's based on actual observed usage - not guesswork.
 
 === Apply the Right-Sized Resources
 
@@ -168,7 +168,7 @@ oc rollout status deployment/demo-app --timeout=120s
 
 === Create an HPA
 
-Configure automatic scaling when CPU exceeds 50%. Why 50%? Lower targets mean pods scale sooner (more responsive, higher cost). Higher targets pack pods tighter (saves resources, slower reaction). 50% is a common starting point — tune it based on your app's latency requirements.
+Configure automatic scaling when CPU exceeds 50%. Why 50%? Lower targets mean pods scale sooner (more responsive, higher cost). Higher targets pack pods tighter (saves resources, slower reaction). 50% is a common starting point - tune it based on your app's latency requirements.
 
 [source,bash,role="execute"]
 ----
@@ -182,7 +182,7 @@ Check the HPA:
 oc get hpa demo-app
 ----
 
-TIP: You can view the HPA in the console at **Workloads > HorizontalPodAutoscalers** (project: `performance-demo`) — it shows current vs target CPU percentage and the current replica count in real-time.
+TIP: You can view the HPA in the console at **Workloads > HorizontalPodAutoscalers** (project: `performance-demo`) - it shows current vs target CPU percentage and the current replica count in real-time.
 
 === Generate Load
 
@@ -208,7 +208,7 @@ You can also watch via CLI:
 oc get hpa demo-app -w
 ----
 
-Watch the `REPLICAS` column — it will increase as CPU usage rises above 50%. This takes 1-2 minutes.
+Watch the `REPLICAS` column - it will increase as CPU usage rises above 50%. This takes 1-2 minutes.
 
 Press `Ctrl+C` when you see replicas increase (typically to 2-4 pods).
 
@@ -241,7 +241,7 @@ Look at the memory percentages across your nodes. In the **OCP Console**, naviga
 
 image::hpa-scaling-dashboard.png[Dashboard showing CPU usage and pod count during HPA scaling event]
 
-The graphs show how your HPA scaling event looked over time — CPU utilisation from requests climbed above 200% as the load generator pushed each pod past the 50% target, and the HPA responded by scaling up to 4 pods. The CPU Quota table below shows each pod's actual usage vs its requests and limits.
+The graphs show how your HPA scaling event looked over time - CPU utilisation from requests climbed above 200% as the load generator pushed each pod past the 50% target, and the HPA responded by scaling up to 4 pods. The CPU Quota table below shows each pod's actual usage vs its requests and limits.
 
 This is how you'd answer the question in a capacity review: "Do we need more nodes, or are our apps just over-provisioned?" In many clusters, VPA alone frees enough capacity to avoid buying more infrastructure.
 

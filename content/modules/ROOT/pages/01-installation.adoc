@@ -6,7 +6,7 @@
 
 == What You're Checking
 
-These are the same checks you'd run after an installation, after an upgrade, or when something feels off — ClusterOperators, node config, networking, storage, and etcd health.
+These are the same checks you'd run after an installation, after an upgrade, or when something feels off - ClusterOperators, node config, networking, storage, and etcd health.
 
 Your cluster was provisioned using IPI (Installer-Provisioned Infrastructure), which automates compute, network, storage, and DNS. OpenShift also supports UPI, Agent-based/Assisted Installer for bare metal, and managed offerings (ROSA, ARO). See the link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[Installation Documentation] for details.
 
@@ -69,7 +69,7 @@ Check the `Conditions` section for details about why it's degraded.
 * `monitoring` degraded - Storage or resource issues
 * `authentication` degraded - OAuth or LDAP configuration issues
 
-**Console view:** Switch to the **OCP Console** tab and navigate to **Administration -> Cluster Settings -> ClusterOperators**. The console shows each operator with green/red status icons — degraded operators are immediately visible without scanning a 34-row table. This is faster than CLI for a quick health check.
+**Console view:** Switch to the **OCP Console** tab and navigate to **Administration -> Cluster Settings -> ClusterOperators**. The console shows each operator with green/red status icons - degraded operators are immediately visible without scanning a 34-row table. This is faster than CLI for a quick health check.
 
 image::installation-images/clusteroperators-console.png[ClusterOperators in web console]
 
@@ -116,7 +116,7 @@ No updates available. You may still upgrade to a specific release image
 with --to-image or wait for new updates to be available.
 ----
 
-In the **OCP Console**, navigate to **Administration -> Cluster Settings**. The **Details** tab shows the current version, update channel, and — when updates are available — a visual upgrade path graph showing the route from your current version to available targets. This is far more informative than the CLI text output for planning upgrades.
+In the **OCP Console**, navigate to **Administration -> Cluster Settings**. The **Details** tab shows the current version, update channel, and - when updates are available - a visual upgrade path graph showing the route from your current version to available targets. This is far more informative than the CLI text output for planning upgrades.
 
 image::installation-images/cluster-settings-update.png[Cluster Settings Details tab showing version and update channel]
 
@@ -154,7 +154,7 @@ You can also verify this in the console. Navigate to **Compute -> MachineConfigP
 
 image::installation-images/machineconfigpools-console.png[MachineConfigPools showing master and worker pools with Up to date status]
 
-The green *Up to date* indicators and *Degraded: False* confirm that all node configurations have been applied successfully. During an upgrade or configuration change, you would see the *Update status* change to *Updating* — this view is a quick way to monitor node rollout progress without polling the CLI.
+The green *Up to date* indicators and *Degraded: False* confirm that all node configurations have been applied successfully. During an upgrade or configuration change, you would see the *Update status* change to *Updating* - this view is a quick way to monitor node rollout progress without polling the CLI.
 
 == Step 4: Test Networking (Hands-on)
 
@@ -185,7 +185,7 @@ curl -sk https://$(oc get route test-app -n install-test -o jsonpath='{.spec.hos
 
 **What this proves:** DNS works, router is functional, TLS certificates auto-generated, and the application is reachable from outside the cluster.
 
-TIP: You can also verify the route in the console at **Networking > Routes** (project: `install-test`) — click the route URL to test it directly from the browser.
+TIP: You can also verify the route in the console at **Networking > Routes** (project: `install-test`) - click the route URL to test it directly from the browser.
 
 Clean up:
 
@@ -260,7 +260,7 @@ Check the pod wrote to the volume successfully:
 oc logs test-storage -n storage-test
 ----
 
-You should see `Storage works!` — confirming that dynamic provisioning, volume attachment, and read/write all function correctly.
+You should see `Storage works!` - confirming that dynamic provisioning, volume attachment, and read/write all function correctly.
 
 Clean up:
 
@@ -271,12 +271,12 @@ oc delete project storage-test &>/dev/null &
 
 === Step 6: Verify etcd Health
 
-You've already seen the Prometheus monitoring stack in the Platform Overview. For post-installation verification, the most important dashboard is **etcd** — the distributed key-value store that holds all cluster state.
+You've already seen the Prometheus monitoring stack in the Platform Overview. For post-installation verification, the most important dashboard is **etcd** - the distributed key-value store that holds all cluster state.
 
 In the **OCP Console**, navigate to **Observe -> Dashboards** and select the **etcd** dashboard. Key panels to check:
 
-* **Total Leader Elections Per Day** — should be 0 or very low. Frequent leader elections indicate disk I/O problems or network latency between control plane nodes — the kind of issue that causes cascading API failures at 2am.
-* **Disk Sync Duration** — if fsync times are consistently above 10ms, etcd performance will suffer and `oc` commands will start timing out.
+* **Total Leader Elections Per Day** - should be 0 or very low. Frequent leader elections indicate disk I/O problems or network latency between control plane nodes - the kind of issue that causes cascading API failures at 2am.
+* **Disk Sync Duration** - if fsync times are consistently above 10ms, etcd performance will suffer and `oc` commands will start timing out.
 
 image::installation-images/etcd-dashboard.png[etcd dashboard showing cluster health metrics]
 

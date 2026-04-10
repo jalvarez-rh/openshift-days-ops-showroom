@@ -52,10 +52,10 @@ image::app-mgmt-deploy-image.png[Deploy Image form with weathernow image validat
 
 This creates two resources:
 
-* **Deployment** — defines what container to run and how many replicas
-* **Service** — internal load balancer that routes traffic to the pods
+* **Deployment** - defines what container to run and how many replicas
+* **Service** - internal load balancer that routes traffic to the pods
 
-You'll be taken to the Topology view. Notice the pod is running and the service is created, but under **Routes** it says "No Routes found for this resource" — the application isn't accessible from outside the cluster yet.
+You'll be taken to the Topology view. Notice the pod is running and the service is created, but under **Routes** it says "No Routes found for this resource" - the application isn't accessible from outside the cluster yet.
 
 image::app-mgmt-deploy-no-route.png[Topology view showing weathernow with no route]
 
@@ -66,15 +66,15 @@ Now switch to the terminal to see the same information via CLI:
 oc get pods -n app-management
 ----
 
-You should see one pod in `Running` status — the same pod you just saw in the Topology view.
+You should see one pod in `Running` status - the same pod you just saw in the Topology view.
 
 === Inspect Your Application
 
-Before moving on, get familiar with the two most important diagnostic commands. These work on any pod in any namespace. The console's pod detail view (click any pod name) shows the same information across the **Details**, **Events**, and **Logs** tabs — the console log viewer supports real-time streaming, text search, and downloading.
+Before moving on, get familiar with the two most important diagnostic commands. These work on any pod in any namespace. The console's pod detail view (click any pod name) shows the same information across the **Details**, **Events**, and **Logs** tabs - the console log viewer supports real-time streaming, text search, and downloading.
 
 image::app-mgmt-pod-details.png[Pod detail page showing Overview with Events and resource usage]
 
-Get detailed information about a pod — events, node placement, container status:
+Get detailed information about a pod - events, node placement, container status:
 
 [source,bash,role="execute"]
 ----
@@ -99,9 +99,9 @@ Check the service:
 oc get svc -n app-management
 ----
 
-The service has a `ClusterIP` — this is only reachable from inside the cluster. To expose it externally, we need a Route.
+The service has a `ClusterIP` - this is only reachable from inside the cluster. To expose it externally, we need a Route.
 
-TIP: You can also see this in the console at **Networking > Services** (project: `app-management`) — click `weathernow` to see the service details, endpoints, and backing pods.
+TIP: You can also see this in the console at **Networking > Services** (project: `app-management`) - click `weathernow` to see the service details, endpoints, and backing pods.
 
 == Expose & Scale
 
@@ -114,7 +114,7 @@ A Route connects an external URL to your service through the OpenShift router (H
 oc create route edge weathernow --service=weathernow
 ----
 
-The `edge` termination means TLS is handled by the router — traffic is encrypted between the user and the router, then plain HTTP to the pod.
+The `edge` termination means TLS is handled by the router - traffic is encrypted between the user and the router, then plain HTTP to the pod.
 
 Check the route:
 
@@ -153,7 +153,7 @@ You can also verify via CLI:
 oc get pods -n app-management
 ----
 
-You should see 3 pods, all `Running`. The service automatically load balances across all of them — no configuration needed. The service uses **label selectors** to find pods:
+You should see 3 pods, all `Running`. The service automatically load balances across all of them - no configuration needed. The service uses **label selectors** to find pods:
 
 [source,bash,role="execute"]
 ----
@@ -168,7 +168,7 @@ Each pod's IP is listed as an endpoint. When a new pod starts, it's automaticall
 
 When a pod dies, OpenShift automatically replaces it. Let's see this in action.
 
-Start watching pods, then delete one — you'll see every status transition in real-time:
+Start watching pods, then delete one - you'll see every status transition in real-time:
 
 [source,bash,role="execute"]
 ----
@@ -176,7 +176,7 @@ oc get pods -n app-management -w &
 sleep 2 && oc delete pod $(oc get pods -n app-management -o jsonpath='{.items[0].metadata.name}') -n app-management --wait=false
 ----
 
-Watch the output — you'll see the deleted pod transition to `Terminating` while a new pod appears as `Pending` → `ContainerCreating` → `Running`. The total stays at 3 replicas throughout.
+Watch the output - you'll see the deleted pod transition to `Terminating` while a new pod appears as `Pending` → `ContainerCreating` → `Running`. The total stays at 3 replicas throughout.
 
 Press `Ctrl+C` when you see the replacement pod reach `Running`.
 
@@ -188,12 +188,12 @@ TIP: You can also watch this in the **OCP Console** at **Workloads -> Pods** (pr
 
 How does OpenShift know if your application is actually healthy? Without probes, a pod shows `Running` even if the app inside has hung, crashed its listener, or is returning errors to every request. Probes fix that.
 
-* **Readiness probe** — "Can this pod handle traffic?" If it fails, the pod is removed from the service endpoints. No requests get sent to it.
-* **Liveness probe** — "Is this pod still alive?" If it fails, OpenShift restarts the container.
+* **Readiness probe** - "Can this pod handle traffic?" If it fails, the pod is removed from the service endpoints. No requests get sent to it.
+* **Liveness probe** - "Is this pod still alive?" If it fails, OpenShift restarts the container.
 
 ==== Break It On Purpose
 
-Let's see what happens when probes fail. Add a readiness probe pointing at the **wrong port** — port 9999, where nothing is listening:
+Let's see what happens when probes fail. Add a readiness probe pointing at the **wrong port** - port 9999, where nothing is listening:
 
 [source,bash,role="execute"]
 ----
@@ -206,7 +206,7 @@ oc patch deployment weathernow -n app-management --type=json -p='[
 ]'
 ----
 
-Watch the rollout — it will stall because the new pods never become ready:
+Watch the rollout - it will stall because the new pods never become ready:
 
 [source,bash,role="execute"]
 ----
@@ -222,7 +222,7 @@ Check the pods:
 oc get pods -n app-management
 ----
 
-You should see pods showing `0/1 Running` — the container is running, but the readiness probe is failing so OpenShift won't send traffic to them. In the **OCP Console**, go to **Workloads -> Pods** (project: `app-management`):
+You should see pods showing `0/1 Running` - the container is running, but the readiness probe is failing so OpenShift won't send traffic to them. In the **OCP Console**, go to **Workloads -> Pods** (project: `app-management`):
 
 image::broken-probe-pods.png[Pod list showing 0/1 Running pod with failed readiness probe]
 
@@ -237,11 +237,11 @@ Check via CLI too:
 oc describe pod -l deployment=weathernow -n app-management | grep -A2 "Readiness"
 ----
 
-The pod is alive but not ready. No traffic reaches it. This is exactly what happens in production when an app's health endpoint goes down — OpenShift protects users from broken pods automatically.
+The pod is alive but not ready. No traffic reaches it. This is exactly what happens in production when an app's health endpoint goes down - OpenShift protects users from broken pods automatically.
 
 ==== Fix the Probe
 
-Now fix it — point the readiness probe at port 8080 where httpd is actually listening, and add a liveness probe too:
+Now fix it - point the readiness probe at port 8080 where httpd is actually listening, and add a liveness probe too:
 
 [source,bash,role="execute"]
 ----
@@ -259,7 +259,7 @@ oc patch deployment weathernow -n app-management --type=json -p='[
 ]'
 ----
 
-NOTE: Probes support multiple types: `httpGet` (checks an HTTP endpoint), `tcpSocket` (checks if a port is listening), and `exec` (runs a command inside the container). Use whichever matches your app — `httpGet` to a `/healthz` endpoint is most common for web services.
+NOTE: Probes support multiple types: `httpGet` (checks an HTTP endpoint), `tcpSocket` (checks if a port is listening), and `exec` (runs a command inside the container). Use whichever matches your app - `httpGet` to a `/healthz` endpoint is most common for web services.
 
 [source,bash,role="execute"]
 ----
@@ -273,13 +273,13 @@ TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
 oc get pods -n app-management
 ----
 
-All pods now show `1/1 Running` — probes pass, traffic flows. You just diagnosed and fixed a readiness probe failure, which is one of the most common issues in production OpenShift clusters.
+All pods now show `1/1 Running` - probes pass, traffic flows. You just diagnosed and fixed a readiness probe failure, which is one of the most common issues in production OpenShift clusters.
 
 TIP: In the **OCP Console**, navigate to **Workloads -> Deployments**, click the three-dot menu on the `weathernow` deployment, and select **Edit Health Checks**:
 
 image::deployment-actions-menu.png[Deployment actions menu showing Edit Health Checks option]
 
-The form visually shows the difference between liveness, readiness, and startup probes — and lets you configure them without writing JSON patches:
+The form visually shows the difference between liveness, readiness, and startup probes - and lets you configure them without writing JSON patches:
 
 image::edit-health-checks.png[Edit Health Checks form showing configured readiness and liveness probes]
 
@@ -294,7 +294,7 @@ Simulate a bad deploy by changing the image:
 oc set image deployment/weathernow weathernow=registry.access.redhat.com/ubi9/nginx-124 -n app-management
 ----
 
-Check the rollout history — OpenShift tracks every change:
+Check the rollout history - OpenShift tracks every change:
 
 [source,bash,role="execute"]
 ----
@@ -307,7 +307,7 @@ You can also see this visually in the console. Navigate to **Workloads -> Deploy
 
 image::app-mgmt-replicasets-history.png[ReplicaSets tab showing deployment revision history with active and scaled-down replicas]
 
-Each ReplicaSet represents a revision. The active one shows `1 of 1 pods` while previous revisions are scaled to `0 of 0 pods` — OpenShift keeps them so it can roll back instantly.
+Each ReplicaSet represents a revision. The active one shows `1 of 1 pods` while previous revisions are scaled to `0 of 0 pods` - OpenShift keeps them so it can roll back instantly.
 
 Roll back to the previous working version:
 
@@ -330,7 +330,7 @@ oc rollout status deployment/weathernow -n app-management --timeout=60s
 
 TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
 
-The deployment is back to the working version. In production, `oc rollout undo` is often the fastest way to recover from a bad release — faster than fixing the code and redeploying.
+The deployment is back to the working version. In production, `oc rollout undo` is often the fastest way to recover from a bad release - faster than fixing the code and redeploying.
 
 == Cleanup & Summary
 
@@ -338,13 +338,13 @@ The deployment is back to the working version. In production, `oc rollout undo` 
 
 You completed the core application lifecycle on OpenShift:
 
-* **Deploy** — `oc new-app` creates deployment + service in one command
-* **Inspect** — `oc describe pod` and `oc logs` for diagnostics
-* **Expose** — `oc create route edge` adds TLS-terminated external access
-* **Scale** — `oc scale` adjusts replicas, service auto-balances
-* **Self-heal** — delete a pod, OpenShift replaces it in seconds
-* **Health checks** — probes ensure only healthy pods receive traffic
-* **Rollback** — `oc rollout undo` reverts a bad deployment instantly
+* **Deploy** - `oc new-app` creates deployment + service in one command
+* **Inspect** - `oc describe pod` and `oc logs` for diagnostics
+* **Expose** - `oc create route edge` adds TLS-terminated external access
+* **Scale** - `oc scale` adjusts replicas, service auto-balances
+* **Self-heal** - delete a pod, OpenShift replaces it in seconds
+* **Health checks** - probes ensure only healthy pods receive traffic
+* **Rollback** - `oc rollout undo` reverts a bad deployment instantly
 
 **Key commands:**
 
@@ -361,10 +361,10 @@ oc rollout status deployment/myapp             # Watch rollout
 
 === Cleanup
 
-NOTE: If the **Ingress & Load Balancing** module is part of your workshop, **skip this cleanup** — it reuses the `weathernow` application in the `app-management` namespace.
+NOTE: If the **Ingress & Load Balancing** module is part of your workshop, **skip this cleanup** - it reuses the `weathernow` application in the `app-management` namespace.
 
 [source,bash,role="execute"]
 ----
 oc delete namespace app-management --ignore-not-found --wait=false
-echo "Cleanup running in background — you can continue to the next module"
+echo "Cleanup running in background - you can continue to the next module"
 ----
