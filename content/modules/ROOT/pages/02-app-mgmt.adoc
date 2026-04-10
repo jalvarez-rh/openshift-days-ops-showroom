@@ -213,6 +213,8 @@ Watch the rollout — it will stall because the new pods never become ready:
 oc rollout status deployment/weathernow -n app-management --timeout=30s || true
 ----
 
+NOTE: If you see `Waiting for deployment "weathernow" rollout to finish: 0 of 1 updated replicas are available...` hanging, press **Ctrl+C** to exit and continue.
+
 Check the pods:
 
 [source,bash,role="execute"]
