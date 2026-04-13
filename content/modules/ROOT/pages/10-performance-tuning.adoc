@@ -61,11 +61,8 @@ image::perf-pod-metrics.png[Pod Metrics tab showing CPU and memory usage graphs]
 
 [source,bash,role="execute"]
 ----
+echo "Waiting 60s for metrics to populate..."
 sleep 60
-----
-
-[source,bash,role="execute"]
-----
 oc adm top pod -l app=memory-hog
 ----
 
