@@ -68,5 +68,12 @@ CLIENT_SECRET=$(curl -sk "${KEYCLOAK_URL}/admin/realms/OpenShift/clients/${CLIEN
   -H "Authorization: Bearer $TOKEN" | python3 -c "import sys,json; print(json.load(sys.stdin)['value'])")
 echo "  Client secret retrieved automatically"
 
+echo "=== Creating OpenShift client secret ==="
+oc delete secret rhbk-client-secret -n openshift-config 2>/dev/null || true
+oc create secret generic rhbk-client-secret \
+  --from-literal=clientSecret="${CLIENT_SECRET}" \
+  -n openshift-config
+echo "  Secret rhbk-client-secret created in openshift-config"
+
 echo ""
 echo "Done - Keycloak is fully configured"

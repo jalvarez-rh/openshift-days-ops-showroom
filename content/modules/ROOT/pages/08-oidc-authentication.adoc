@@ -176,14 +176,7 @@ Verify the setup in the Keycloak UI - click **Users** and **Groups** to confirm 
 
 === Step 7: Configure OpenShift OAuth
 
-The script retrieved the client secret automatically. Now create the OpenShift secret and configure OAuth:
-
-[source,bash,role="execute"]
-----
-oc create secret generic rhbk-client-secret \
-  --from-literal=clientSecret="$CLIENT_SECRET" \
-  -n openshift-config
-----
+The Keycloak setup script already created the `rhbk-client-secret` in `openshift-config` with the correct client secret. Now configure OAuth to use it:
 
 [source,bash,role="execute"]
 ----
