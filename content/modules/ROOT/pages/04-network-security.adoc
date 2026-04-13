@@ -463,6 +463,8 @@ Test DNS resolution from any pod:
 oc exec -n netpol-frontend deployment/frontend -- nslookup backend.netpol-backend.svc.cluster.local
 ----
 
+You should see an `Address:` line with the backend service's cluster IP - this confirms that pods can resolve other services by name. Ignore the `Got recursion not available` messages, they're harmless (CoreDNS disables recursion by default).
+
 === View Cluster DNS Configuration
 
 [source,bash,role="execute"]
