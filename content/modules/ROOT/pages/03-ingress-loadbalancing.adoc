@@ -208,14 +208,14 @@ The three options for `insecureEdgeTerminationPolicy`:
 
 HSTS tells browsers to always use HTTPS - even if the user types `http://`. This prevents downgrade attacks.
 
-Check the current response headers:
+Check the current response headers - you should see `No HSTS header` because we haven't enabled it yet:
 
 [source,bash,role="execute"]
 ----
 curl -sk -D - "https://$(oc get route weathernow -o jsonpath='{.spec.host}')" 2>&1 | grep -i strict || echo "No HSTS header"
 ----
 
-Apply HSTS:
+Now apply HSTS:
 
 [source,bash,role="execute"]
 ----
