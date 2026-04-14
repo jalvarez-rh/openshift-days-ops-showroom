@@ -290,7 +290,7 @@ Every operations team has been burned by a patch that broke something. Snapshots
 
 ==== Step 1: Take a Snapshot
 
-1. On the **rhel9-vm** details page, click **Actions** -> **Take snapshot**
+1. Navigate to **rhel9-vm** (not the clone) and open its details page. Click **Actions** -> **Take snapshot**
 
 image::virt-actions-snapshot.png[Actions dropdown with Take snapshot option]
 
