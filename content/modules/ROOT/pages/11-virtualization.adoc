@@ -308,12 +308,31 @@ image::virt-snapshot-ready.png[Snapshots tab showing rhel9-vm-snapshot with Read
 
 ==== Step 3: Break Something
 
-The snapshot is your safety net - let's prove it works by breaking the VM. Open the **Console** tab and log in with the guest credentials shown at the top. Then create a file and delete something:
+The snapshot is your safety net - let's prove it works by breaking the VM. First, get the VM login credentials:
+
+[source,bash,role="execute"]
+----
+DATA=$(oc get vm rhel9-vm -n vm-demo -o jsonpath='{.spec.template.spec.volumes[?(@.name=="cloudinitdisk")].cloudInitNoCloud.userData}')
+echo "Username: $(echo "$DATA" | grep 'user:' | awk '{print $2}')"
+echo "Password: $(echo "$DATA" | grep 'password:' | awk '{print $2}')"
+----
+
+Now connect to the VM console:
+
+[source,bash,role="execute"]
+----
+virtctl console rhel9-vm -n vm-demo
+----
+
+Log in with the credentials above, then run these commands inside the VM:
 
 ----
-touch /home/cloud-user/important-data.txt
+touch /home/important-data.txt
 sudo rm /etc/motd
 ----
+
+When done, click the **reload button** on the Terminal tab to exit the console and return to your normal terminal.
+
 
 Now the VM has changed - a new file exists, a system file is gone. Let's restore to the snapshot and prove both changes are reverted.
 
