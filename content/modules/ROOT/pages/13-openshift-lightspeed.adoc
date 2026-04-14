@@ -123,6 +123,11 @@ All conditions should show `"status": "True"` and `"message": "Ready"`.
 
 === Access OpenShift Lightspeed in the Web Console
 
+You may have been logged out of the console during the Lightspeed deployment. If so, log back in with:
+
+* Username: `{openshift_cluster_admin_username}`
+* Password: `{openshift_cluster_admin_password}`
+
 Once the OLSConfig is ready, the OpenShift Lightspeed chat button in the bottom right corner will now be functional:
 
 image::ols-chat-button.png[Lightspeed chat button in bottom right]
