@@ -63,7 +63,7 @@ Wait for the new pod to be ready:
 
 [source,bash,role="execute"]
 ----
-oc rollout status deployment/backstage-developer-hub -n backstage --timeout=300s
+oc rollout status deployment/backstage-developer-hub -n backstage --timeout=600s || echo "Rollout is still progressing - check 'oc get pods -n backstage' to confirm the new pod is Running"
 ----
 
 NOTE: This can take a couple of minutes while the pod restarts with the new configuration. This is normal - please give it time.
@@ -291,7 +291,7 @@ The Operator sees the CR change and triggers a rolling restart - new pods with p
 
 [source,bash,role="execute"]
 ----
-oc rollout status deployment/backstage-developer-hub -n backstage --timeout=300s
+oc rollout status deployment/backstage-developer-hub -n backstage --timeout=600s || echo "Rollout is still progressing - check 'oc get pods -n backstage' to confirm the new pod is Running"
 ----
 
 NOTE: This takes 2-3 minutes as the init container installs the dynamic plugins before the main container starts. This is normal - please give it time.
