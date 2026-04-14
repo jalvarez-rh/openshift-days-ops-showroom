@@ -27,7 +27,7 @@ The same concepts apply to Microsoft Entra ID, Okta, Google Workspace, and any O
 bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/08-oidc-authentication/install-rhbk-operator.sh)
 ----
 
-NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
+NOTE: This takes a minute or two while the operator installs and the CRDs register. Please give it some time before pressing **Ctrl+C**.
 
 === Step 2: Deploy Keycloak
 
@@ -198,7 +198,7 @@ done
 echo "OAuth is live with rhbk provider - you can log in now"
 ----
 
-NOTE: If this hangs, press **Ctrl+C** to exit and re-run the command.
+NOTE: This takes a minute or two while the OAuth pods restart with the new configuration. Please give it some time before pressing **Ctrl+C**.
 
 === Step 8: Test OIDC Login and Automatic Group Sync
 
