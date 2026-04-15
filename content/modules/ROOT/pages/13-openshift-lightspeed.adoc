@@ -201,7 +201,7 @@ Now let's use OpenShift Lightspeed to help diagnose the issue. For troubleshooti
 
 In the OpenShift web console, navigate to *Workloads* → *Pods* and make sure you are in the `lightspeed-demo` namespace. You'll find the pod that OpenShift Lightspeed listed before. Click on `broken-pod` to view the resource details.
 
-Now, in the chat window, click on the *clip* incon next to the typing bar and you will see a menu that allows you to attach different components. Selec *Full YAML file*:
+Now, in the chat window, click on the *clip* icon next to the typing bar and you will see a menu that allows you to attach different components. Select *Full YAML file*:
 
 image::ols-attachments.png[OpenShift Lightspeed attachments menu]
 
@@ -222,7 +222,14 @@ The same applies to Red Hat Advanced Cluster Management (ACM). When working acro
 
 This module concludes here, but the OpenShift Lightspeed operator will stay active for the remainder of the workshop. Feel free to continue using it as you progress through the upcoming modules - whether to clarify concepts, generate resource definitions, or assist with virtualization and multi-cluster tasks, if applicable.
 
-== Summary
+== Cleanup & Summary
+
+[source,bash,role="execute"]
+----
+oc delete olsconfig cluster 2>/dev/null || true
+oc delete namespace lightspeed-demo --ignore-not-found --wait=false
+echo "Cleanup running in background - you can continue to the next module"
+----
 
 OpenShift Lightspeed provides AI-assisted operations directly in the console. By enabling natural language interactions, it helps administrators and developers quickly reduce the initial learning curve in OpenShift and be more productive by reducing time-to-resolution for common issues.
 

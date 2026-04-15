@@ -129,7 +129,7 @@ Get detailed status:
 oc describe backstage developer-hub -n backstage
 ----
 
-=== Step 5: Register an Application in the Catalog
+=== Step 4: Register an Application in the Catalog
 
 The catalog is the heart of Developer Hub - a unified view of every service your organization runs. Right now it's empty because nobody has registered anything. Let's fix that.
 

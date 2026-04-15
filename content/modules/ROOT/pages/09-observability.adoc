@@ -162,7 +162,7 @@ While the restarts accumulate, navigate to **Observe -> Alerting -> Alerting Rul
 
 image::alerting-rules-search.png[Alerting Rules showing custom HighPodRestartRate rule]
 
-Click on the rule to see its details. After about 2 minutes (once the pod has restarted 3+ times and the `for: 1m` duration passes), you'll see the alert transition from **Inactive** → **Pending** → **Firing**:
+Click on the rule to see its details. After about 2 minutes (once the pod has restarted 3+ times and the `for: 5m` duration passes), you'll see the alert transition from **Inactive** → **Pending** → **Firing**:
 
 image::alerting-rule-detail.png[HighPodRestartRate rule detail showing expression and active alerts]
 
