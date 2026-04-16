@@ -59,7 +59,11 @@ Wait for the pod to start (this takes a minute or two):
 [source,bash,role="execute"]
 ----
 echo "Waiting for Keycloak pod to be created..."
-until oc get pod keycloak-0 -n rhbk 2>/dev/null; do sleep 5; done
+ELAPSED=0
+until oc get pod keycloak-0 -n rhbk 2>/dev/null; do
+  sleep 5; ELAPSED=$((ELAPSED+5))
+  [ $ELAPSED -ge 180 ] && echo "ERROR: Timed out waiting for Keycloak pod" && break
+done
 echo "Waiting for Keycloak to be ready..."
 oc wait --for=condition=Ready pod/keycloak-0 -n rhbk --timeout=120s
 echo "Keycloak is running"
@@ -191,9 +195,11 @@ Wait for the OAuth rollout:
 ----
 oc rollout status deployment/oauth-openshift -n openshift-authentication --timeout=120s
 echo "Waiting for all OAuth pods to be ready with new config..."
+ELAPSED=0
 until [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-headers 2>/dev/null | grep -c Running)" -ge 3 ] && \
       [ "$(oc get pods -n openshift-authentication -l app=oauth-openshift --no-headers 2>/dev/null | grep -vc Running)" -eq 0 ]; do
-  sleep 5
+  sleep 5; ELAPSED=$((ELAPSED+5))
+  [ $ELAPSED -ge 180 ] && echo "ERROR: Timed out - check 'oc get pods -n openshift-authentication'" && break
 done
 echo "OAuth is live with rhbk provider - you can log in now"
 ----

@@ -93,9 +93,16 @@ Wait for the operator (~1 minute):
 [source,bash,role="execute"]
 ----
 echo "Waiting for VPA operator..."
-until oc get csv -n openshift-vertical-pod-autoscaler 2>/dev/null | grep -q Succeeded; do sleep 10; done
+ELAPSED=0
+until oc get csv -n openshift-vertical-pod-autoscaler 2>/dev/null | grep -q Succeeded; do
+  sleep 10; ELAPSED=$((ELAPSED+10))
+  [ $ELAPSED -ge 180 ] && echo "ERROR: Timed out - check 'oc get csv -n openshift-vertical-pod-autoscaler'" && break
+done
 echo "Waiting for VPA CRD to register..."
-until oc get crd verticalpodautoscalers.autoscaling.k8s.io 2>/dev/null; do sleep 5; done
+until oc get crd verticalpodautoscalers.autoscaling.k8s.io 2>/dev/null; do
+  sleep 5; ELAPSED=$((ELAPSED+5))
+  [ $ELAPSED -ge 240 ] && echo "ERROR: Timed out waiting for CRD" && break
+done
 echo "VPA operator ready"
 ----
 
@@ -113,8 +120,10 @@ Wait for VPA to analyze the pod and produce a recommendation:
 [source,bash,role="execute"]
 ----
 echo "Waiting for VPA recommendation..."
+ELAPSED=0
 until oc get vpa memory-hog-vpa -o jsonpath='{.status.recommendation}' 2>/dev/null | grep -q containerRecommendations; do
-  sleep 10
+  sleep 10; ELAPSED=$((ELAPSED+10))
+  [ $ELAPSED -ge 120 ] && echo "ERROR: Timed out - VPA may need more time, try running this block again" && break
 done
 oc get vpa memory-hog-vpa
 ----

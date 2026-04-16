@@ -342,8 +342,10 @@ Wait for the collector pods to start before verifying the full stack:
 [source,bash,role="execute"]
 ----
 echo "Waiting for collector pods to start..."
+ELAPSED=0
 until oc get pods -n openshift-logging -l app.kubernetes.io/component=collector --no-headers 2>/dev/null | grep -q Running; do
-  sleep 10
+  sleep 10; ELAPSED=$((ELAPSED+10))
+  [ $ELAPSED -ge 300 ] && echo "ERROR: Timed out - check 'oc get pods -n openshift-logging'" && break
 done
 oc get pods -n openshift-logging
 ----

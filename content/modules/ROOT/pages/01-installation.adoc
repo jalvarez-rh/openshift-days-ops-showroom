@@ -247,8 +247,10 @@ Wait for the PVC to bind and the pod to start:
 [source,bash,role="execute"]
 ----
 echo "Waiting for storage test to complete..."
+ELAPSED=0
 until oc get pod test-storage -n storage-test --no-headers 2>/dev/null | grep -qE 'Running|Completed'; do
-  sleep 5
+  sleep 5; ELAPSED=$((ELAPSED+5))
+  [ $ELAPSED -ge 120 ] && echo "ERROR: Timed out - check 'oc get pods -n storage-test'" && break
 done
 oc get pvc test-pvc -n storage-test && oc get pod test-storage -n storage-test
 ----

@@ -142,8 +142,10 @@ The OAuth pods need a few moments after rollout to fully initialize their LDAP c
 ----
 OCP_SERVER=$(oc whoami --show-server)
 echo "Waiting for LDAP authentication to be ready..."
+ELAPSED=0
 until oc login -u normaluser1 -p 'Op#nSh1ft' $OCP_SERVER --insecure-skip-tls-verify 2>&1 | grep -q "Login successful"; do
-  sleep 10
+  sleep 10; ELAPSED=$((ELAPSED+10))
+  [ $ELAPSED -ge 300 ] && echo "ERROR: Timed out - LDAP may not be configured correctly" && break
 done
 oc login -u {openshift_cluster_admin_username} -p {openshift_cluster_admin_password} $OCP_SERVER --insecure-skip-tls-verify 2>/dev/null
 echo "LDAP authentication is ready"
