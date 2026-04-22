@@ -4,6 +4,10 @@
 **Duration:** 35 minutes +
 **Format:** Hands-on demonstration
 
+image::diagrams/01_platform_architecture.png[OpenShift Platform Architecture, align=center]
+
+image::diagrams/01_control_plane.png[Control Plane Responsibilities, 300, align=center]
+
 == Let's Go
 
 You have cluster admin access to a live OpenShift cluster. Let's make sure everything's working - click the commands below:

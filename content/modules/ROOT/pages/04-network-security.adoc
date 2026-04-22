@@ -10,6 +10,8 @@ Your apps are receiving traffic - but by default, every pod can talk to every ot
 
 In this module you'll lock things down: implement NetworkPolicy to isolate pods, configure EgressFirewall to control outbound traffic, and set up EgressIP for predictable source IPs that external firewalls can whitelist.
 
+image::diagrams/04_egress_ip.png[OpenShift EgressIP Architecture, align=center]
+
 == OpenShift Networking
 
 OpenShift uses **OVN-Kubernetes** as its network plugin (the only supported option in 4.20). It handles pod networking, network isolation via NetworkPolicy, egress traffic control, and optional IPsec encryption.

@@ -10,6 +10,8 @@ Something's wrong with your cluster. How do you know? Where do you look? If you 
 
 In this module you'll explore the metrics and alerting that's already running (Prometheus, Alertmanager), set up a logging pipeline (Loki, Vector) so you can actually search logs, and deploy distributed tracing (OpenTelemetry, Tempo) to follow requests across services.
 
+image::diagrams/09_observability.png[OpenShift Monitoring Architecture, align=center]
+
 == Built-in Metrics with Prometheus
 
 OpenShift ships with a fully managed Prometheus stack - no installation required. It collects metrics from every component in the cluster.

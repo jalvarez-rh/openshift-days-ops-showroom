@@ -18,6 +18,8 @@ You will:
 
 The same concepts apply to Microsoft Entra ID, Okta, Google Workspace, and any OIDC provider - Keycloak just lets you see both sides of the integration.
 
+image::diagrams/07_08_rbac.png[OpenShift RBAC - Users Groups and Role Bindings, align=center]
+
 == Deploy Keycloak
 
 === Step 1: Install the RHBK Operator

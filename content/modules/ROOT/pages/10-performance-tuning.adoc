@@ -19,6 +19,8 @@
 * Configure HPA to handle variable load
 * Monitor performance with built-in tools
 
+image::diagrams/10_hpa.png[Horizontal Pod Autoscaler Flow, align=center]
+
 == Part 1: The Over-Provisioned Application
 
 A developer deployed an application requesting 2Gi of memory "just to be safe." But is that actually needed?

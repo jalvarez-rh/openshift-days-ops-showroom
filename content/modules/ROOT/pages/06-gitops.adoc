@@ -25,6 +25,8 @@ By the end of this module, you will be able to:
 * Resync resources to restore the desired state
 * Enable self-healing so ArgoCD automatically reverts unauthorised changes
 
+image::diagrams/06_gitops.png[ArgoCD GitOps Sync Flow, align=center]
+
 === How GitOps Works on OpenShift
 
 OpenShift GitOps uses link:https://argo-cd.readthedocs.io/en/stable/[ArgoCD] to implement a continuous reconciliation loop:

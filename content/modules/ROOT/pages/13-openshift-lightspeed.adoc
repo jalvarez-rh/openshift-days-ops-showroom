@@ -20,6 +20,8 @@ In this module, you'll configure OpenShift Lightspeed and use it to understand O
 
 The OpenShift Lightspeed Operator has been pre-installed on your cluster. However, to be fully operational, OpenShift Lightspeed must be connected to an LLM provider. In this module, you'll also create the configuration necessary to enable this connection.
 
+image::diagrams/13_lightspeed.png[OpenShift Lightspeed Architecture, align=center]
+
 == Deploy OpenShift Lightspeed
 
 === Verify the Operator Installation

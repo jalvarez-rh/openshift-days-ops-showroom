@@ -21,6 +21,10 @@ By the end of this module, you will be able to:
 * Understand OpenShift self-healing (pod recreation)
 * Configure liveness and readiness probes
 
+image::diagrams/02_route.png[OpenShift Route - Service - Pods, 500, align=center]
+
+image::diagrams/02_service.png[OpenShift Service Load Balancing, 500, align=center]
+
 == Deploy & Inspect
 
 === Deploy an Application

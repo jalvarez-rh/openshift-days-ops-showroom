@@ -12,6 +12,8 @@ OpenShift's OAuth server supports multiple identity providers - LDAP, OpenID Con
 
 TIP: For the full list of supported identity providers, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/understanding-identity-provider[Understanding identity providers].
 
+image::diagrams/07_08_rbac.png[OpenShift RBAC - Users Groups and Role Bindings, align=center]
+
 == Configure LDAP
 
 === Step 1: Examine Default Authentication
