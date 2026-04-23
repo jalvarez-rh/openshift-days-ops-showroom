@@ -19,8 +19,6 @@
 * Configure HPA to handle variable load
 * Monitor performance with built-in tools
 
-image::diagrams/10_hpa.png[Horizontal Pod Autoscaler Flow, align=center]
-
 == Part 1: The Over-Provisioned Application
 
 A developer deployed an application requesting 2Gi of memory "just to be safe." But is that actually needed?
@@ -180,6 +178,8 @@ oc get deployment memory-hog -o jsonpath='{.spec.template.spec.containers[0].res
 **Result:** You just freed up **1.75Gi of memory** and **450m of CPU** that other workloads can now use. Multiply this across hundreds of pods and you've potentially saved significant cluster costs.
 
 == Part 3: Handle Variable Load with HPA
+
+image::diagrams/10_hpa.png[Horizontal Pod Autoscaler Flow, align=center]
 
 Now let's deploy an application that needs to scale horizontally based on traffic.
 
