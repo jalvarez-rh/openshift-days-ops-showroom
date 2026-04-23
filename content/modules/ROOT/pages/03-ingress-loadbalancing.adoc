@@ -293,6 +293,8 @@ done
 wait 2>/dev/null
 ----
 
+NOTE: If the output hangs, press **Ctrl+C** to get your prompt back.
+
 All `403` - every request reaches the app (the httpd default page returns 403, which is expected). No `000` responses means no connections were dropped. Compare this to the previous test where HAProxy was actively dropping connections - that's the difference one annotation makes.
 
 === Ingress Controller Scaling
