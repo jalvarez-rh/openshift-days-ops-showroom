@@ -251,10 +251,10 @@ Now prove it works. Try resolving DNS via the blocked external server:
 
 [source,bash,role="execute"]
 ----
-oc exec -n netpol-backend deployment/backend -- nslookup -timeout=2 -retry=1 google.com 8.8.8.8
+oc exec -n netpol-backend deployment/backend -- bash -c "timeout 3 bash -c 'echo > /dev/udp/8.8.8.8/53' 2>&1 && echo 'DNS to 8.8.8.8: ALLOWED' || echo 'DNS to 8.8.8.8: BLOCKED (timed out)'"
 ----
 
-Expected: `communications error to 8.8.8.8#53: timed out` followed by `no servers could be reached`. The ANP blocked outbound DNS to 8.8.8.8.
+Expected: `DNS to 8.8.8.8: BLOCKED (timed out)`. The ANP blocked outbound traffic to 8.8.8.8.
 
 Clean up and verify DNS recovers:
 
@@ -265,10 +265,10 @@ oc delete adminnetworkpolicy cluster-deny-external-dns
 
 [source,bash,role="execute"]
 ----
-oc exec -n netpol-backend deployment/backend -- nslookup -timeout=2 -retry=1 google.com 8.8.8.8
+oc exec -n netpol-backend deployment/backend -- bash -c "timeout 3 bash -c 'echo > /dev/udp/8.8.8.8/53' 2>&1 && echo 'DNS to 8.8.8.8: ALLOWED' || echo 'DNS to 8.8.8.8: BLOCKED (timed out)'"
 ----
 
-Expected: DNS resolution succeeds again - the ANP is gone.
+Expected: `DNS to 8.8.8.8: ALLOWED`. The ANP is gone, traffic flows again.
 
 NOTE: AdminNetworkPolicy uses `policy.networking.k8s.io/v1alpha1`. There is also `BaselineAdminNetworkPolicy` which acts as a fallback - it applies only when no other ANP or NetworkPolicy matches. Together, ANP and BANP give platform teams guardrails while still allowing namespace-level customization.
 
@@ -478,10 +478,10 @@ Test DNS resolution from any pod:
 
 [source,bash,role="execute"]
 ----
-oc exec -n netpol-frontend deployment/frontend -- nslookup backend.netpol-backend.svc.cluster.local
+oc exec -n netpol-frontend deployment/frontend -- getent hosts backend.netpol-backend.svc.cluster.local
 ----
 
-You should see an `Address:` line with the backend service's cluster IP - this confirms that pods can resolve other services by name. Ignore the `Got recursion not available` messages, they're harmless (CoreDNS disables recursion by default).
+You should see the backend service's cluster IP followed by the hostname - this confirms that pods can resolve other services by name via the cluster DNS.
 
 === View Cluster DNS Configuration
 
