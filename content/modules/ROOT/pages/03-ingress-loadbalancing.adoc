@@ -71,6 +71,8 @@ oc new-project app-management 2>/dev/null || oc project app-management
 oc get deployment weathernow -n app-management 2>/dev/null || oc new-app --name=weathernow --image=registry.access.redhat.com/ubi9/httpd-24
 ----
 
+NOTE: If you see pod status streaming in the terminal, press **Ctrl+C** to get your prompt back.
+
 [source,bash,role="execute"]
 ----
 oc create route edge weathernow --service=weathernow 2>/dev/null || echo "Route already exists"
