@@ -172,22 +172,28 @@ Each pod's IP is listed as an endpoint. When a new pod starts, it's automaticall
 
 When a pod dies, OpenShift automatically replaces it. Let's see this in action.
 
-Start watching pods, then delete one - you'll see every status transition in real-time:
+First, delete a pod:
 
 [source,bash,role="execute"]
 ----
-oc get pods -n app-management -w &
-sleep 2 && oc delete pod $(oc get pods -n app-management -o jsonpath='{.items[0].metadata.name}') -n app-management --wait=false
+oc delete pod $(oc get pods -n app-management -o jsonpath='{.items[0].metadata.name}') -n app-management --wait=false
 ----
 
-Watch the output - you'll see the deleted pod transition to `Terminating` while a new pod appears as `Pending` → `ContainerCreating` → `Running`. The total stays at 3 replicas throughout.
-
-Press `Ctrl+C` when you see the replacement pod reach `Running`, then stop the background watch:
+Now immediately check the pods to see the self-healing in action:
 
 [source,bash,role="execute"]
 ----
-kill %1 2>/dev/null; echo "Background watch stopped"
+oc get pods -n app-management
 ----
+
+You should see one pod `Terminating` and a new one in `ContainerCreating` or `Running`. Run it again after a few seconds:
+
+[source,bash,role="execute"]
+----
+sleep 5 && oc get pods -n app-management
+----
+
+The total is back to 3 replicas - all `Running`. The replacement happened in seconds with no manual intervention.
 
 TIP: You can also watch this in the **OCP Console** at **Workloads -> Pods** (project: `app-management`). The console shows pod status transitions in real-time with colour-coded indicators.
 
