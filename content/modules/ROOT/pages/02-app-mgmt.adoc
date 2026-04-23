@@ -276,12 +276,14 @@ oc patch deployment weathernow -n app-management --type=json -p='[
 
 NOTE: Probes support multiple types: `httpGet` (checks an HTTP endpoint), `tcpSocket` (checks if a port is listening), and `exec` (runs a command inside the container). Use whichever matches your app - `httpGet` to a `/healthz` endpoint is most common for web services.
 
+Wait for the rollout to complete:
+
 [source,bash,role="execute"]
 ----
 oc rollout status deployment/weathernow -n app-management --timeout=60s
 ----
 
-TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
+NOTE: Once you see `deployment "weathernow" successfully rolled out` or `Completed`, press **Ctrl+C** to exit and continue.
 
 [source,bash,role="execute"]
 ----
