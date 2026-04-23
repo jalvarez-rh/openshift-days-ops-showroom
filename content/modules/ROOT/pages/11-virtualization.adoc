@@ -208,14 +208,13 @@ oc get vmi rhel9-vm -n vm-demo -o jsonpath='Node: {.status.nodeName}' && echo ""
 
 ==== Step 3: Trigger the Migration
 
-1. On the VM details page, click the **Actions** dropdown in the top-right corner
-2. Hover over **Migration** to expand the submenu
-3. Select **Compute** - this migrates the VM's running state (CPU/memory) to a different node
-
+. On the VM details page, click the **Actions** dropdown in the top-right corner
+. Hover over **Migration** to expand the submenu
+. Select **Compute** - this migrates the VM's running state (CPU/memory) to a different node
++
 image::virt-actions-migrate.png[Actions dropdown showing Migration submenu with Compute and Storage options]
-
-4. In the migration dialog, leave **Automatically selected Node** selected and click **Migrate VirtualMachine**
-
+. In the migration dialog, leave **Automatically selected Node** selected and click **Migrate VirtualMachine**
++
 image::virt-migrate-auto-node.png[Migration dialog with Automatically selected Node option]
 
 ==== Step 4: Watch the Migration
