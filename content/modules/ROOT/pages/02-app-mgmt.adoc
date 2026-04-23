@@ -221,6 +221,8 @@ oc patch deployment weathernow -n app-management --type=json -p='[
 ]'
 ----
 
+NOTE: The patch triggers a new rollout. If you see pod status streaming in the terminal, press **Ctrl+C** to get your prompt back.
+
 Watch the rollout - it will stall because the new pods never become ready:
 
 [source,bash,role="execute"]
@@ -273,6 +275,8 @@ oc patch deployment weathernow -n app-management --type=json -p='[
   }}
 ]'
 ----
+
+NOTE: The patch triggers a new rollout. If you see pod status streaming in the terminal, press **Ctrl+C** to get your prompt back.
 
 NOTE: Probes support multiple types: `httpGet` (checks an HTTP endpoint), `tcpSocket` (checks if a port is listening), and `exec` (runs a command inside the container). Use whichever matches your app - `httpGet` to a `/healthz` endpoint is most common for web services.
 
