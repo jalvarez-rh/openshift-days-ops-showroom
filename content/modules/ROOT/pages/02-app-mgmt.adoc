@@ -182,7 +182,12 @@ sleep 2 && oc delete pod $(oc get pods -n app-management -o jsonpath='{.items[0]
 
 Watch the output - you'll see the deleted pod transition to `Terminating` while a new pod appears as `Pending` → `ContainerCreating` → `Running`. The total stays at 3 replicas throughout.
 
-Press `Ctrl+C` when you see the replacement pod reach `Running`.
+Press `Ctrl+C` when you see the replacement pod reach `Running`, then stop the background watch:
+
+[source,bash,role="execute"]
+----
+kill %1 2>/dev/null; echo "Background watch stopped"
+----
 
 TIP: You can also watch this in the **OCP Console** at **Workloads -> Pods** (project: `app-management`). The console shows pod status transitions in real-time with colour-coded indicators.
 
