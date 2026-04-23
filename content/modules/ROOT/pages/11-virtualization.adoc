@@ -303,17 +303,18 @@ Now connect to the VM console:
 virtctl console rhel9-vm -n vm-demo
 ----
 
-Log in with the credentials above, then run these commands inside the VM:
+Log in with the credentials above, then run these commands inside the VM to make changes we can verify after restore:
 
 ----
 touch /home/rhel/important-data.txt
-sudo rm /etc/motd
+cat /etc/hostname
+sudo hostnamectl set-hostname broken-vm
+cat /etc/hostname
 ----
 
-When done, click the **reload button** on the Terminal tab to exit the console and return to your normal terminal.
+You should see the hostname change from `rhel9-vm` to `broken-vm`. When done, click the **reload button** on the Terminal tab to exit the console and return to your normal terminal.
 
-
-Now the VM has changed - a new file exists, a system file is gone. Let's restore to the snapshot and prove both changes are reverted.
+Now the VM has changed - a new file exists and the hostname has been modified. Let's restore to the snapshot and prove both changes are reverted.
 
 ==== Step 4: Restore from Snapshot
 
@@ -346,10 +347,10 @@ Log in with the credentials above, then verify the restore worked:
 
 ----
 ls /home/rhel/important-data.txt
-cat /etc/motd
+cat /etc/hostname
 ----
 
-`ls` should show `No such file or directory` - the file you created is gone. `cat /etc/motd` should show the original welcome message that was deleted - it's been restored. The disk was reverted to the exact state when you took the snapshot. The disk was restored to the exact state when you took the snapshot - this is how you roll back a failed OS patch or a broken config change without rebuilding from scratch.
+`ls` should show `No such file or directory` - the file you created is gone. `cat /etc/hostname` should show `rhel9-vm` (the original hostname), not `broken-vm` - the hostname change was reverted. The disk was restored to the exact state when you took the snapshot. This is how you roll back a failed OS patch or a broken config change without rebuilding from scratch.
 
 Click the **reload button** on the Terminal tab to exit the console.
 
