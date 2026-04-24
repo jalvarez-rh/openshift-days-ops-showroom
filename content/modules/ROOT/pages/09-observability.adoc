@@ -12,7 +12,7 @@ In this module you'll explore the metrics and alerting that's already running (P
 
 image::diagrams/09_observability.png[OpenShift Monitoring Architecture, align=center]
 
-TIP: If you were logged in as a different user in a previous module, log back in as admin before continuing. In the **OCP Console**, click your username in the top-right corner, select **Log out**, then log back in with: Username: `{openshift_cluster_admin_username}` / Password: `{openshift_cluster_admin_password}`. In the terminal, run: `oc login -u {openshift_cluster_admin_username} -p {openshift_cluster_admin_password} {openshift_api_server_url} --insecure-skip-tls-verify`
+TIP: If you were logged in as a different user in a previous module, log back in as admin. Console: Username `{openshift_cluster_admin_username}` / Password `{openshift_cluster_admin_password}`. Terminal: `oc login -u {openshift_cluster_admin_username} -p {openshift_cluster_admin_password}`
 
 == Built-in Metrics with Prometheus
 
