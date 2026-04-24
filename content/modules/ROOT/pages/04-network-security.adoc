@@ -251,7 +251,7 @@ Now prove it works. Try resolving DNS via the blocked external server:
 
 [source,bash,role="execute"]
 ----
-oc exec -n netpol-backend deployment/backend -- bash -c "timeout 3 bash -c 'echo > /dev/udp/8.8.8.8/53' 2>&1 && echo 'DNS to 8.8.8.8: ALLOWED' || echo 'DNS to 8.8.8.8: BLOCKED (timed out)'"
+bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/04-network-security/test-dns.sh)
 ----
 
 Expected: `DNS to 8.8.8.8: BLOCKED (timed out)`. The ANP blocked outbound traffic to 8.8.8.8.
@@ -265,7 +265,7 @@ oc delete adminnetworkpolicy cluster-deny-external-dns
 
 [source,bash,role="execute"]
 ----
-oc exec -n netpol-backend deployment/backend -- bash -c "timeout 3 bash -c 'echo > /dev/udp/8.8.8.8/53' 2>&1 && echo 'DNS to 8.8.8.8: ALLOWED' || echo 'DNS to 8.8.8.8: BLOCKED (timed out)'"
+bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/04-network-security/test-dns.sh)
 ----
 
 Expected: `DNS to 8.8.8.8: ALLOWED`. The ANP is gone, traffic flows again.
