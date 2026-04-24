@@ -85,7 +85,7 @@ Wait for the pod to be ready:
 oc rollout status deployment/weathernow -n app-management --timeout=60s
 ----
 
-TIP: This may take a moment. Press **Ctrl+C** if you need to skip ahead.
+NOTE: This may take a minute to complete. Only press **Ctrl+C** if it has been running for more than 5 minutes.
 
 Now let's examine its networking. In the **OCP Console**, navigate to **Networking -> Routes** (project: `app-management`). You'll see the `weathernow` route with its status, clickable URL, and target service:
 

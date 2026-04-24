@@ -29,7 +29,7 @@ image::diagrams/07_08_rbac.png[OpenShift RBAC - Users Groups and Role Bindings, 
 bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/08-oidc-authentication/install-rhbk-operator.sh)
 ----
 
-NOTE: This takes a minute or two while the operator installs and the CRDs register. Please give it some time before pressing **Ctrl+C**.
+NOTE: This takes a minute or two while the operator installs and the CRDs register. Please wait for it to complete - only press **Ctrl+C** if it has been running for more than 5 minutes.
 
 === Step 2: Deploy Keycloak
 
@@ -206,7 +206,7 @@ done
 echo "OAuth is live with rhbk provider - you can log in now"
 ----
 
-NOTE: This takes a minute or two while the OAuth pods restart with the new configuration. Please give it some time before pressing **Ctrl+C**.
+NOTE: This takes a minute or two while the OAuth pods restart with the new configuration. Please wait for it to complete - only press **Ctrl+C** if it has been running for more than 5 minutes.
 
 === Step 8: Test OIDC Login and Automatic Group Sync
 
