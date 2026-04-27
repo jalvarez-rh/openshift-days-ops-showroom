@@ -68,7 +68,7 @@ sleep 60
 oc adm top pod -l app=memory-hog
 ----
 
-The app is only using **~150Mi** of the 2Gi it reserved. That's **1.85Gi of wasted capacity** that other pods can't use!
+The app is using far less memory than the 2Gi it reserved — the exact number will vary but it's typically well under 200Mi. That's over **1.8Gi of wasted capacity** that other pods can't use!
 
 == Part 2: Right-Size with VPA
 
