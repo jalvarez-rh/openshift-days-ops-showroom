@@ -237,9 +237,9 @@ oc run load-generator --image=busybox --restart=Never -- /bin/sh -c "while true;
 
 === Watch the Autoscaling
 
-While the load generator runs, switch to the **OCP Console** tab and navigate to **Observe -> Dashboards**. Select **Kubernetes / Compute Resources / Namespace (Pods)** and choose project `performance-demo`. Watch CPU utilisation climb in real-time on the graph.
+While the load generator runs, switch to the **OCP Console** tab and navigate to **Workloads -> HorizontalPodAutoscalers** (project: `performance-demo`). Watch the current CPU percentage rise above the 50% target, then watch the replica count increase as HPA responds.
 
-Then navigate to **Workloads -> Pods** (project: `performance-demo`) and watch new pods appear as the HPA scales up.
+Then navigate to **Workloads -> Pods** (project: `performance-demo`) and watch new pods appear as the HPA scales up. As replicas increase, per-pod CPU will drop because the load is distributed across more pods — that's the autoscaler working.
 
 image::perf-hpa-pods-scaling.png[Pod list showing multiple demo-app pods after HPA scale-up]
 
