@@ -83,9 +83,21 @@ image::rhdh-catalog-all-components.png[Developer Hub catalog showing 6 component
 
 This is what replaces the _"who owns this workload?"_ question. Every service has an owner, a lifecycle stage, and metadata connecting it to the cluster. When a team leaves or a service is deprecated, it's visible here instead of becoming an orphaned mystery workload.
 
-=== Step 3: See Live Kubernetes Data
+=== Step 3: Use the Catalog as an Ops Tool
 
-Click on **payments-platform** in the catalog. You'll see the component overview page with owner, lifecycle, and tags.
+The catalog isn't just a list - it's a searchable, filterable inventory. Try using the filters on the left sidebar:
+
+* **Owner** dropdown - select `payments-team`. The catalog narrows to just their service. _"The security team needs a list of everything the payments team runs."_ Done in two clicks.
+* Clear the owner filter, then try **Tags** - search for `pci`. You'll find `payments-platform` tagged for PCI compliance. _"Which services fall under PCI audit scope?"_ One filter.
+* Try **Lifecycle** - filter for `development`. You'll see `order-tracker` - the only service not yet in production.
+
+image::rhdh-catalog-filtered-payments.png[Catalog filtered by payments-team showing PCI-tagged service]
+
+In a real organization with hundreds of services, these filters are how you answer questions that used to require searching through namespaces, Slack threads, or tribal knowledge.
+
+=== Step 4: See Live Kubernetes Data
+
+Clear any filters and click on **payments-platform** in the catalog. You'll see the component overview page with owner, lifecycle, and tags.
 
 Now click the **Kubernetes** tab.
 
@@ -93,76 +105,76 @@ image::rhdh-payments-kubernetes-3pods.png[Kubernetes tab showing 3 pods for paym
 
 You should see 3 pods running - `payments-api`, `payments-processor`, and `payments-gateway` - with their status, restarts, and age. This data is live from the cluster.
 
-Click the **Topology** tab to see a visual map of how the deployments relate.
-
 **This is the key.** A developer clicks their service in the catalog and sees exactly what's running - pod count, restart history, resource usage - without `oc` access, without opening a ticket, without messaging you. You didn't have to do anything for this to work. The platform team configured it once, and every service with the right labels gets this for free.
 
 Try clicking on **weather-app** - you'll see all 5 weather microservice pods.
 
+=== Step 5: See What Errors Look Like
+
+Now click on **inventory-system** in the catalog and check its **Kubernetes** tab.
+
+image::rhdh-inventory-crashloop-errors.png[inventory-system showing error reporting with crashlooping pod]
+
+You'll see an **Error Reporting** section at the top - the `inventory-db-migrator` pod is in CrashLoopBackOff. The error messages are right there: restart count, failure reason.
+
+This is what a developer sees when something is broken - and what they'd show you in a ticket. Instead of _"my app is broken, can you look?"_ they can tell you _"inventory-db-migrator is crashlooping with a database connection error."_ That's a much better starting point for troubleshooting.
+
 Now click on **order-tracker**. Notice the Kubernetes tab shows nothing - this service is registered in the catalog but hasn't been deployed yet.
 
-image::rhdh-order-tracker-empty.png[order-tracker Kubernetes tab showing no resources] You'll fix that later in this module.
+image::rhdh-order-tracker-empty.png[order-tracker Kubernetes tab showing no resources]
+
+You'll fix that later in this module.
 
 == Understand How It Works
 
-Before you start making changes, take a minute to understand the moving parts. When something breaks with RHDH, this is what you need to know.
+You've seen what RHDH looks like. Now figure out how it's wired together - when something breaks, these are the pieces you'll need to check.
 
-=== Step 4: Check the RHDH Deployment
+=== Step 6: Check RHDH in the OpenShift Console
 
-Verify the RHDH pods are running:
+Switch to the **OCP Console** tab. Make sure the **Administrator** perspective is selected, then go to **Workloads** -> **Pods** and select the **backstage** project from the dropdown.
 
-[source,bash,role="execute"]
-----
-oc get pods -n backstage
-----
+You'll see two pods:
 
-You should see:
+* `backstage-developer-hub` - the main application
+* `backstage-psql-developer-hub` - PostgreSQL database storing catalog data and template history
 
-----
-NAME                                       READY   STATUS
-backstage-developer-hub-xxxxx              1/1     Running
-backstage-psql-developer-hub-0             1/1     Running
-----
+Click on the `backstage-developer-hub` pod and look at the **Details** tab. Scroll down to see the environment variables and mounted volumes - you'll see the ConfigMaps and Secrets that configure RHDH.
 
-The main pod runs the Developer Hub application. The PostgreSQL pod stores the catalog data, user sessions, and template task history.
+=== Step 7: Trace the Configuration
 
-=== Step 5: Explore the Operator and CR
-
-RHDH is managed by an Operator. The Operator watches a `Backstage` Custom Resource and reconciles the deployment whenever the CR changes.
-
-View the Backstage CR:
-
-[source,bash,role="execute"]
-----
-oc get backstage -n backstage
-----
-
-Look at how it's configured:
+Back in the terminal, figure out how RHDH connects to the cluster. Start with the Backstage Custom Resource - this is the single source of truth for the deployment:
 
 [source,bash,role="execute"]
 ----
 oc get backstage developer-hub -n backstage -o yaml | grep -A5 "dynamicPlugins\|extraEnvs\|extraFiles\|appConfig"
 ----
 
-This shows you the key configuration points:
+You can see four key configuration points. Follow each one:
 
-* **dynamicPluginsConfigMapName** - which ConfigMap controls which plugins are enabled
-* **extraEnvs** - environment variables and secrets injected into the pod (like the Kubernetes service account token)
-* **extraFiles** - ConfigMaps mounted into the pod (like the catalog entries)
-* **appConfig** - the RHDH application configuration
-
-=== Step 6: Check the Plugin Configuration
-
-See which dynamic plugins are enabled:
+**What plugins are enabled?**
 
 [source,bash,role="execute"]
 ----
 oc get configmap dynamic-plugins-rhdh -n backstage -o jsonpath='{.data.dynamic-plugins\.yaml}' | grep -A1 "package:"
 ----
 
-You should see the Kubernetes backend and frontend plugins, the Topology plugin, and the scaffolder modules that power the software templates. These are bundled in the RHDH image - the ConfigMap just switches them on or off.
+**How does RHDH authenticate to the cluster?**
 
-=== Step 7: Understand the Label Contract
+[source,bash,role="execute"]
+----
+oc get configmap app-config-rhdh -n backstage -o jsonpath='{.data.app-config-rhdh\.yaml}' | grep -A2 "authProvider\|serviceAccountToken"
+----
+
+It uses a service account token stored in a Secret. Check what permissions that service account has:
+
+[source,bash,role="execute"]
+----
+oc get clusterrolebindings -o custom-columns='BINDING:.metadata.name,ROLE:.roleRef.name' | grep rhdh-
+----
+
+You should see `cluster-reader` (for viewing pods) and `rhdh-scaffolder` (for creating namespaces via templates). This is the least-privilege model - RHDH can read cluster state and create namespaces, but nothing more.
+
+=== Step 8: Understand the Label Contract
 
 The Kubernetes plugin discovers pods by matching labels. This is the contract between the catalog and the cluster:
 
@@ -177,13 +189,13 @@ Verify this on the weather app:
 oc get deployments -n ops-track-demo -o custom-columns='NAME:.metadata.name,BACKSTAGE-ID:.spec.template.metadata.labels.backstage\.io/kubernetes-id'
 ----
 
-All 5 deployments should show `weather-app` as their backstage ID. If any deployment is missing this label, it won't appear in the Kubernetes tab. You'll see this in action during the troubleshooting section.
+All 5 deployments should show `weather-app` as their backstage ID. If any deployment has a wrong or missing label, it won't appear in the Kubernetes tab. You'll see exactly this during the troubleshooting section.
 
 == Watch Self-Service in Action
 
 One of the biggest values of RHDH for an ops team is that it handles requests you used to get as tickets. Let's see a software template in action.
 
-=== Step 8: Use the Software Template
+=== Step 9: Use the Software Template
 
 In the **Developer Hub** tab, scroll down on the Home page to **Explore Templates**. You'll see the **Deploy a New Service** template - this was built by the platform team to let developers provision their own namespaces following approved patterns.
 
@@ -210,7 +222,7 @@ Watch the template execute - it creates a namespace on the cluster with the righ
 
 image::rhdh-template-completed.png[Template completed successfully - namespace created]
 
-=== Step 9: Verify What the Template Created
+=== Step 10: Verify What the Template Created
 
 Back in the terminal, check what happened:
 
@@ -221,13 +233,13 @@ oc get namespace order-tracker --show-labels
 
 The template created the namespace with labels identifying the service and owning team. This is what replaced a ticket to your team asking for a new namespace.
 
-In production, templates can do much more - create RBAC policies, set up CI/CD pipelines, provision git repositories, and configure networking - all following golden paths your platform team defines.
+This template creates a namespace - which is the simplest useful example. In production, a single template click can provision a namespace with RBAC, a CI/CD pipeline, a git repository, network policies, and a catalog registration - all following golden paths your platform team defines. The developer fills in a form; the platform enforces your standards. No tickets, no drift, no "I just need a quick namespace and I'll add RBAC later."
 
 == Hands-On: Onboard a Service
 
 The `order-tracker` service is registered in the catalog and now has a namespace, but it's not deployed yet. The inventory team has asked you to deploy their application. This is a common ops task - the catalog entry exists, the namespace exists, and you need to wire up the workloads.
 
-=== Step 10: Deploy the Application
+=== Step 11: Deploy the Application
 
 Deploy two microservices for the order tracking system:
 
@@ -245,11 +257,11 @@ oc rollout status deployment/order-tracker-api -n order-tracker --timeout=120s
 oc rollout status deployment/order-tracker-worker -n order-tracker --timeout=120s
 ----
 
-=== Step 11: Wire Up RHDH Discovery
+=== Step 12: Wire Up RHDH Discovery
 
 The deployments are running, but if you check the **order-tracker** Kubernetes tab in Developer Hub right now, you still won't see any pods. The plugin doesn't know these deployments belong to this catalog entry.
 
-Remember the label contract from Step 7? You need to add the `backstage.io/kubernetes-id` label to each deployment's pod template:
+Remember the label contract from Step 8? You need to add the `backstage.io/kubernetes-id` label to each deployment's pod template:
 
 [source,bash,role="execute"]
 ----
@@ -266,7 +278,7 @@ Verify the labels are set:
 oc get deployments -n order-tracker -o custom-columns='NAME:.metadata.name,BACKSTAGE-ID:.spec.template.metadata.labels.backstage\.io/kubernetes-id'
 ----
 
-=== Step 12: See It in Developer Hub
+=== Step 13: See It in Developer Hub
 
 Go back to the **Developer Hub** tab and click on **order-tracker** in the catalog. Click the **Kubernetes** tab.
 
@@ -276,54 +288,96 @@ image::rhdh-order-tracker-2pods.png[order-tracker now showing 2 live pods]
 
 The inventory team's service went from a catalog placeholder to a live, visible deployment. They can now check the status themselves without messaging you. You did this by deploying the workloads and adding one label.
 
-== Troubleshoot: A Service Disappeared
+== Troubleshoot: Tickets from Dev Teams
 
-Here's a scenario you'll encounter in production: a developer reports that one of their services has disappeared from Developer Hub.
+You have two tickets in your queue from developer teams. Let's work through them.
 
-=== Step 13: Break Something
+=== Ticket 1: "Our gateway disappeared from Developer Hub"
 
-Let's simulate the problem. Remove the backstage label from one of the payments team's deployments:
+The payments team reports that their gateway service vanished from the Developer Hub Kubernetes tab, but the pod is still running.
+
+Simulate the problem:
 
 [source,bash,role="execute"]
 ----
 oc patch deployment payments-gateway -n payments-team --type=json \
-  -p '[{"op":"remove","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id"}]'
+  -p '[{"op":"replace","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"payments-gateway"}]'
 ----
 
-=== Step 14: See the Impact
+Go to **Developer Hub** > **payments-platform** > **Kubernetes** tab. You should see only **2 pods** instead of 3.
 
-Go to the **Developer Hub** tab and click on **payments-platform** in the catalog. Click the **Kubernetes** tab.
+image::rhdh-payments-broken-2pods.png[payments-platform showing only 2 pods]
 
-You should now see only **2 pods** instead of 3. The `payments-gateway` deployment is still running - but it's invisible to Developer Hub.
-
-image::rhdh-payments-broken-2pods.png[payments-platform showing only 2 pods after label removal]
-
-This is the ticket you'd get: _"Our gateway service disappeared from Developer Hub but it's still running. Can you check?"_
-
-=== Step 15: Diagnose and Fix
-
-Check what's deployed versus what Developer Hub can see. Compare the deployments and their labels:
+The deployment is running, but it's invisible. Diagnose it:
 
 [source,bash,role="execute"]
 ----
 oc get deployments -n payments-team -o custom-columns='NAME:.metadata.name,BACKSTAGE-ID:.spec.template.metadata.labels.backstage\.io/kubernetes-id'
 ----
 
-You should see that `payments-gateway` has `<none>` for its backstage ID while the other two show `payments-platform`. The label is missing.
+You should see `payments-gateway` has the value `payments-gateway` instead of `payments-platform`. The label doesn't match the catalog annotation - so the plugin can't find it.
 
 Fix it:
 
 [source,bash,role="execute"]
 ----
 oc patch deployment payments-gateway -n payments-team --type=json \
-  -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"payments-platform"}]'
+  -p '[{"op":"replace","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"payments-platform"}]'
 ----
 
-Go back to Developer Hub and check the **payments-platform** Kubernetes tab again. All 3 pods should be visible.
+Check the **payments-platform** Kubernetes tab again - all 3 pods should be back.
 
 image::rhdh-payments-fixed-3pods.png[payments-platform restored to 3 pods after fix]
 
-The fix was one label. But knowing _where_ to look - understanding the label contract between the catalog and the cluster - is what separates a quick fix from an hour of guessing.
+=== Ticket 2: "inventory-system shows errors in Developer Hub"
+
+The inventory team reports their service is showing errors in Developer Hub. They want to know what's wrong.
+
+You already saw this in Step 5 - the `inventory-db-migrator` pod is crashlooping. Now diagnose it from the CLI like you would in production:
+
+[source,bash,role="execute"]
+----
+oc get pods -n inventory-team
+----
+
+You'll see `inventory-db-migrator` in CrashLoopBackOff. Check the logs:
+
+[source,bash,role="execute"]
+----
+oc logs deployment/inventory-db-migrator -n inventory-team
+----
+
+The log shows: `FATAL: Cannot connect to database at postgres.inventory-team:5432 - connection refused`. The pod is trying to reach a database that doesn't exist.
+
+This is a development issue, not an ops issue - the inventory team deployed a database migration job before setting up their database. You'd respond to the ticket: _"Your inventory-db-migrator is crashlooping because it can't connect to postgres.inventory-team:5432. The database service doesn't exist in that namespace. Check with your dev team that the database is deployed before running migrations."_
+
+Delete the broken deployment to clear the error:
+
+[source,bash,role="execute"]
+----
+oc delete deployment inventory-db-migrator -n inventory-team
+----
+
+Check the **inventory-system** Kubernetes tab in Developer Hub - the error reporting section should be gone, and you should see 3 healthy pods.
+
+=== What You Practiced
+
+Two different failure modes, two different diagnosis paths:
+
+[cols="1,1,1"]
+|===
+|Ticket |Symptom in RHDH |Root Cause
+
+|Gateway disappeared
+|2 pods instead of 3, no errors
+|Label value mismatch - label exists but doesn't match the catalog annotation
+
+|Errors in Developer Hub
+|Error Reporting section, pod with errors
+|CrashLoopBackOff - application bug, not an infrastructure issue
+|===
+
+The first is an ops fix (correct the label). The second is a dev team issue (tell them what's wrong and let them fix their code). Knowing the difference saves you from chasing problems that aren't yours.
 
 == What You Learned
 
@@ -331,11 +385,11 @@ The fix was one label. But knowing _where_ to look - understanding the label con
 |===
 |What You Did |Why It Matters
 
-|**Explored the catalog**
-|This is your organization's service inventory - who owns what, where it runs, what state it's in
+|**Browsed and filtered the catalog**
+|The catalog is your service inventory - find owners, filter by tag, answer audit questions in seconds
 
-|**Saw live Kubernetes data**
-|Developers see pod status without `oc` access - this eliminates your most common question
+|**Saw live Kubernetes data and errors**
+|Developers see pod status and error details without `oc` access - healthy and unhealthy states
 
 |**Watched a template run**
 |Self-service provisioning reduces ticket volume - developers get namespaces without asking you
@@ -343,8 +397,8 @@ The fix was one label. But knowing _where_ to look - understanding the label con
 |**Onboarded a service**
 |The label contract between catalog entries and deployments is the key relationship to understand
 
-|**Diagnosed a missing service**
-|When something disappears from Developer Hub, check the labels first - it's almost always the answer
+|**Diagnosed two different failures**
+|Label mismatch = ops fix. Crashlooping pod = dev team issue. Knowing the difference saves you time
 |===
 
 == Going Further

@@ -99,6 +99,13 @@ for dep in inventory-api inventory-worker inventory-db-sync; do
     -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"inventory-system"}]' 2>/dev/null || true
 done
 
+# Inventory team - broken db migrator (crashloops for troubleshooting exercise)
+oc create deployment inventory-db-migrator \
+  --image=registry.access.redhat.com/ubi9/ubi-minimal \
+  -n inventory-team 2>/dev/null -- /bin/sh -c "echo 'FATAL: Cannot connect to database at postgres.inventory-team:5432 - connection refused' && sleep 2 && exit 1" || true
+oc patch deployment inventory-db-migrator -n inventory-team --type=json \
+  -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"inventory-system"}]' 2>/dev/null || true
+
 # Platform services - 1 service
 oc create namespace platform-services 2>/dev/null || true
 oc create deployment notification-service --image=registry.access.redhat.com/ubi9/httpd-24 -n platform-services 2>/dev/null || true
