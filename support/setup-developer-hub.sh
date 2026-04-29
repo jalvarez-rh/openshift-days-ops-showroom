@@ -376,16 +376,83 @@ data:
             token: ${SA_TOKEN}
             skipTLSVerify: true
             labels: 'backstage.io/service=\${{ parameters.serviceName }};team=\${{ parameters.teamName }}'
+        - id: deploy-api
+          name: Deploy API Service
+          action: http:backstage:request
+          input:
+            method: POST
+            path: kubernetes/proxy/apis/apps/v1/namespaces/\${{ parameters.serviceName }}/deployments
+            headers:
+              Content-Type: application/json
+            body:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: \${{ parameters.serviceName }}-api
+                namespace: \${{ parameters.serviceName }}
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: \${{ parameters.serviceName }}-api
+                template:
+                  metadata:
+                    labels:
+                      app: \${{ parameters.serviceName }}-api
+                      backstage.io/kubernetes-id: \${{ parameters.serviceName }}
+                  spec:
+                    containers:
+                      - name: httpd
+                        image: registry.access.redhat.com/ubi9/httpd-24
+                        ports:
+                          - containerPort: 8080
+        - id: deploy-worker
+          name: Deploy Worker Service
+          action: http:backstage:request
+          input:
+            method: POST
+            path: kubernetes/proxy/apis/apps/v1/namespaces/\${{ parameters.serviceName }}/deployments
+            headers:
+              Content-Type: application/json
+            body:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: \${{ parameters.serviceName }}-worker
+                namespace: \${{ parameters.serviceName }}
+              spec:
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: \${{ parameters.serviceName }}-worker
+                template:
+                  metadata:
+                    labels:
+                      app: \${{ parameters.serviceName }}-worker
+                      backstage.io/kubernetes-id: \${{ parameters.serviceName }}
+                  spec:
+                    containers:
+                      - name: httpd
+                        image: registry.access.redhat.com/ubi9/httpd-24
+                        ports:
+                          - containerPort: 8080
         - id: log-success
           name: Log Result
           action: debug:log
           input:
-            message: 'Namespace \${{ parameters.serviceName }} created for team \${{ parameters.teamName }}'
+            message: 'Service \${{ parameters.serviceName }} deployed with API and worker pods for team \${{ parameters.teamName }}'
       output:
         text:
-          - title: Namespace Created
+          - title: Service Deployed
             content: |
-              Namespace \${{ parameters.serviceName }} has been created for \${{ parameters.teamName }}.
+              Service \${{ parameters.serviceName }} has been deployed for \${{ parameters.teamName }}.
+
+              Created:
+              - Namespace \${{ parameters.serviceName }}
+              - Deployment \${{ parameters.serviceName }}-api
+              - Deployment \${{ parameters.serviceName }}-worker
+
+              The pods are already labeled for Developer Hub. Check the Kubernetes tab in the catalog.
 EOF
 
 echo "  Done."

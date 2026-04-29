@@ -218,75 +218,38 @@ Click **Review**, then **Create**.
 
 image::rhdh-template-review.png[Template review page before creation]
 
-Watch the template execute - it creates a namespace on the cluster with the right labels and metadata. When it completes, you'll see both steps green with a success message.
+Watch the template execute. You'll see four steps complete:
 
-image::rhdh-template-completed.png[Template completed successfully - namespace created]
+1. **Create OpenShift Namespace** - provisions the namespace with team labels
+2. **Deploy API Service** - creates the API deployment with RHDH discovery labels
+3. **Deploy Worker Service** - creates the worker deployment with RHDH discovery labels
+4. **Log Result** - confirms what was created
 
-=== Step 10: Verify What the Template Created
+image::rhdh-template-completed.png[Template completed successfully]
 
-Back in the terminal, check what happened:
+**This is the golden path.** A developer filled in a form. The template created a namespace, deployed two services, and labeled everything for Developer Hub discovery - all following patterns your platform team defined. No tickets, no manual namespace creation, no "can you label this for me", no drift from standards.
+
+=== Step 10: See the Result Immediately
+
+Back in the terminal, verify what the template created:
 
 [source,bash,role="execute"]
 ----
 oc get namespace order-tracker --show-labels
 ----
 
-The template created the namespace with labels identifying the service and owning team. This is what replaced a ticket to your team asking for a new namespace.
-
-This template creates a namespace - which is the simplest useful example. In production, a single template click can provision a namespace with RBAC, a CI/CD pipeline, a git repository, network policies, and a catalog registration - all following golden paths your platform team defines. The developer fills in a form; the platform enforces your standards. No tickets, no drift, no "I just need a quick namespace and I'll add RBAC later."
-
-== Hands-On: Onboard a Service
-
-The `order-tracker` service is registered in the catalog and now has a namespace, but it's not deployed yet. The inventory team has asked you to deploy their application. This is a common ops task - the catalog entry exists, the namespace exists, and you need to wire up the workloads.
-
-=== Step 11: Deploy the Application
-
-Deploy two microservices for the order tracking system:
-
-[source,bash,role="execute"]
-----
-oc create deployment order-tracker-api --image=registry.access.redhat.com/ubi9/httpd-24 -n order-tracker
-oc create deployment order-tracker-worker --image=registry.access.redhat.com/ubi9/httpd-24 -n order-tracker
-----
-
-Wait for the pods to start:
-
-[source,bash,role="execute"]
-----
-oc rollout status deployment/order-tracker-api -n order-tracker --timeout=120s
-oc rollout status deployment/order-tracker-worker -n order-tracker --timeout=120s
-----
-
-=== Step 12: Wire Up RHDH Discovery
-
-The deployments are running, but if you check the **order-tracker** Kubernetes tab in Developer Hub right now, you still won't see any pods. The plugin doesn't know these deployments belong to this catalog entry.
-
-Remember the label contract from Step 8? You need to add the `backstage.io/kubernetes-id` label to each deployment's pod template:
-
-[source,bash,role="execute"]
-----
-for dep in order-tracker-api order-tracker-worker; do
-  oc patch deployment $dep -n order-tracker --type=json \
-    -p '[{"op":"add","path":"/spec/template/metadata/labels/backstage.io~1kubernetes-id","value":"order-tracker"}]'
-done
-----
-
-Verify the labels are set:
-
 [source,bash,role="execute"]
 ----
 oc get deployments -n order-tracker -o custom-columns='NAME:.metadata.name,BACKSTAGE-ID:.spec.template.metadata.labels.backstage\.io/kubernetes-id'
 ----
 
-=== Step 13: See It in Developer Hub
+The template created the namespace, deployed both services, and set the backstage labels - all in one click.
 
-Go back to the **Developer Hub** tab and click on **order-tracker** in the catalog. Click the **Kubernetes** tab.
+Now go to **Developer Hub** > **Catalog** > **order-tracker** > **Kubernetes** tab. You should see 2 pods running immediately - no manual labeling needed.
 
-You should now see 2 pods running - `order-tracker-api` and `order-tracker-worker`.
+image::rhdh-order-tracker-2pods.png[order-tracker showing 2 live pods deployed by the template]
 
-image::rhdh-order-tracker-2pods.png[order-tracker now showing 2 live pods]
-
-The inventory team's service went from a catalog placeholder to a live, visible deployment. They can now check the status themselves without messaging you. You did this by deploying the workloads and adding one label.
+This is what replaced three separate requests to your team: _"create me a namespace"_, _"deploy my app"_, _"wire it up to Developer Hub"_. One template, one click, done.
 
 == Troubleshoot: Tickets from Dev Teams
 
@@ -391,11 +354,8 @@ The first is an ops fix (correct the label). The second is a dev team issue (tel
 |**Saw live Kubernetes data and errors**
 |Developers see pod status and error details without `oc` access - healthy and unhealthy states
 
-|**Watched a template run**
-|Self-service provisioning reduces ticket volume - developers get namespaces without asking you
-
-|**Onboarded a service**
-|The label contract between catalog entries and deployments is the key relationship to understand
+|**Used a golden path template**
+|One click deployed a namespace + two services + RHDH labels. This replaced three tickets to your team
 
 |**Diagnosed two different failures**
 |Label mismatch = ops fix. Crashlooping pod = dev team issue. Knowing the difference saves you time
