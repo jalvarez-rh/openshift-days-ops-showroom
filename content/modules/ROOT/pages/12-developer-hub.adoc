@@ -386,8 +386,6 @@ This module showed you RHDH from an ops perspective - understanding the tool you
 * **TechDocs** - documentation lives alongside the code and renders in the portal
 * **More Software Templates** - golden paths for deploying applications, creating pipelines, and provisioning infrastructure
 
-**Interested in a deep-dive?** Ask your instructor about the **Platform Engineering with RHDH Workshop**.
-
 == Cleanup
 
 Remove the resources created during this module:
