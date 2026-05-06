@@ -85,7 +85,7 @@ This is what replaces the _"who owns this workload?"_ question. Every service ha
 
 === Step 3: Use the Catalog as an Ops Tool
 
-The catalog isn't just a list - it's a searchable, filterable inventory. Try using the filters on the left sidebar:
+The catalog isn't just a list - it's a searchable, filterable inventory. Try using the filters on the left sidebar. If you don't see the filter options, click the filter icon or expand your browser window wider.
 
 * **Owner** dropdown - select `payments-team`. The catalog narrows to just their service. _"The security team needs a list of everything the payments team runs."_ Done in two clicks.
 * Clear the owner filter, then try **Tags** - search for `pci`. You'll find `payments-platform` tagged for PCI compliance. _"Which services fall under PCI audit scope?"_ One filter.
