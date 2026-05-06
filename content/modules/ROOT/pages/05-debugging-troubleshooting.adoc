@@ -16,7 +16,7 @@ Your cluster is running a weather application made up of several microservices. 
 By the end of this module, you will be able to:
 
 * Read pod events and logs to identify root causes
-* Fix ImagePullBackOff, CrashLoopBackOff, ConfigMap errors, resource constraint violations, and service routing issues
+* Fix ImagePullBackOff, CrashLoopBackOff, ConfigMap errors, resource constraint violations, service routing issues, and SCC permission failures
 * Use the Observe → Diagnose → Fix → Verify workflow
 
 === Your Diagnostic Toolkit
@@ -51,7 +51,7 @@ oc apply -f https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/
 
 === See What's Broken
 
-Five microservices have been deployed with intentional misconfigurations. Let's triage the damage.
+Six microservices have been deployed with intentional misconfigurations. Let's triage the damage.
 
 Switch to the **OCP Console** tab and navigate to **Workloads -> Pods** (select project `ops-track-demo` from the dropdown). You'll immediately see colour-coded status indicators:
 
@@ -73,7 +73,7 @@ oc get pods -n ops-track-demo
 
 NOTE: You might notice `weather-cache` is missing from the pod list - that's one of the problems to investigate. Also, `weather-proxy` shows Running but has its own issue.
 
-**Your mission:** Fix all five.
+**Your mission:** Fix all six.
 
 == Fix the Problems
 
@@ -351,11 +351,72 @@ You should now see the pod's IP in the `ENDPOINTS` column. Traffic will flow to 
 
 **Takeaway:** When a pod is Running but the service isn't working, check if the service selector matches the pod labels. A single character typo can break routing. Use `oc get endpointslice` to verify.
 
+=== Problem 6: Permission Denied (weather-db)
+
+==== Diagnose
+
+Check the pod status:
+
+[source,bash,role="execute"]
+----
+oc get pods -l app=weather-db -n ops-track-demo
+----
+
+You'll see `weather-db` in CrashLoopBackOff. Check the logs:
+
+[source,bash,role="execute"]
+----
+oc logs deployment/weather-db -n ops-track-demo
+----
+
+The log shows: `mkdir: cannot create directory '/var/lib/pgsql': Permission denied`. The container is trying to create a data directory but doesn't have permission.
+
+This is a **Security Context Constraint (SCC)** issue. Check which SCC the pod is running under:
+
+[source,bash,role="execute"]
+----
+oc get pod -l app=weather-db -n ops-track-demo -o jsonpath='{.items[0].metadata.annotations.openshift\.io/scc}'
+----
+
+It shows `restricted-v2`. This SCC assigns a random user ID to the container for security - the container does NOT run as root. The directory `/var/lib/pgsql` is owned by root inside the image, so the random UID can't write to it.
+
+This is the most common source of pod failures on OpenShift. Containers that expect to run as root will fail under `restricted-v2`.
+
+==== Fix
+
+Mount an `emptyDir` volume at the data path. The container can always write to emptyDir volumes regardless of its UID:
+
+[source,bash,role="execute"]
+----
+oc patch deployment weather-db -n ops-track-demo --type=json -p='[
+  {"op":"add","path":"/spec/template/spec/volumes","value":[{"name":"db-data","emptyDir":{}}]},
+  {"op":"add","path":"/spec/template/spec/containers/0/volumeMounts","value":[{"name":"db-data","mountPath":"/var/lib/pgsql"}]}
+]'
+----
+
+==== Verify
+
+[source,bash,role="execute"]
+----
+oc get pods -l app=weather-db -n ops-track-demo
+----
+
+The pod should now be `Running`. Check the logs to confirm the database initialized:
+
+[source,bash,role="execute"]
+----
+oc logs deployment/weather-db -n ops-track-demo
+----
+
+You should see `Database ready on port 5432`.
+
+**Takeaway:** When you see `Permission denied` in a container log, check the SCC with `oc get pod -o jsonpath='{.metadata.annotations.openshift\.io/scc}'`. Under `restricted-v2`, containers run as a random UID and can't write to root-owned directories. Use `emptyDir` volumes for writable paths, or use images designed to run as non-root.
+
 == Quick Reference
 
 === All Fixed
 
-Switch to the **OCP Console** tab - **Workloads -> Pods** (project: `ops-track-demo`). All five pods should now show green `Running` status. Compare this to the red/orange/yellow view you saw at the start - that visual progression is the troubleshooting workflow in action.
+Switch to the **OCP Console** tab - **Workloads -> Pods** (project: `ops-track-demo`). All six pods should now show green `Running` status. Compare this to the red/orange/yellow view you saw at the start - that visual progression is the troubleshooting workflow in action.
 
 image::debugging-all-fixed.png[All five weather pods showing green Running status]
 
@@ -366,7 +427,7 @@ Verify via CLI:
 oc get pods -n ops-track-demo
 ----
 
-All five pods should now be `Running`:
+All six pods should now be `Running`:
 
 ----
 NAME                                READY   STATUS    RESTARTS   AGE
@@ -407,6 +468,10 @@ weather-proxy-xxxxx                 1/1     Running   0          5m
 |Service selector mismatch or app bug
 |`oc get endpointslice` + `oc logs <pod>`
 
+|**Permission denied in logs**
+|SCC restricts container UID
+|Check SCC: `oc get pod -o jsonpath='{.metadata.annotations.openshift\.io/scc}'` → Mount `emptyDir` for writable paths
+
 |**PVC Pending**
 |Storage can't be provisioned
 |`oc describe pvc` → Events → Check StorageClass name/existence
@@ -416,13 +481,14 @@ weather-proxy-xxxxx                 1/1     Running   0          5m
 
 === Summary
 
-You diagnosed and fixed five common OpenShift issues:
+You diagnosed and fixed six common OpenShift issues:
 
 * **ImagePullBackOff** - wrong image tag (`9.9` doesn't exist) → `oc set image`
 * **CrashLoopBackOff** - missing config file → create ConfigMap + volume mount
 * **Resource constraint** - memory typo exceeded LimitRange → `oc set resources`
 * **CreateContainerConfigError** - missing ConfigMap → `oc create configmap`
 * **Service selector mismatch** - typo in selector → `oc patch svc`
+* **SCC permission denied** - container can't write to root-owned directory → mount `emptyDir` volume
 
 The pattern is always the same: **check status → describe pod/replicaset → read logs/events → fix → verify.**
 

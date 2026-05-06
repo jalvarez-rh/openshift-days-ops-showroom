@@ -9,6 +9,7 @@
 # 3. weather-cache: Resource typo (512Gi instead of 512Mi)
 # 4. weather-backend: Missing ConfigMap reference
 # 5. weather-proxy: Service selector typo (proxi vs proxy)
+# 6. weather-db: SCC permission denied (can't write to root-owned directory)
 ---
 # Scenario 1: ImagePullBackOff - Wrong image tag
 apiVersion: apps/v1
@@ -180,3 +181,39 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
+---
+# Scenario 6: SCC Permission Denied - Container can't write to root-owned directory
+# The restricted-v2 SCC assigns a random UID, so the container can't write
+# to /var/lib/pgsql which is owned by root in the image.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-db
+  namespace: ops-track-demo
+  labels:
+    app: weather-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-db
+  template:
+    metadata:
+      labels:
+        app: weather-db
+    spec:
+      containers:
+      - name: database
+        image: registry.access.redhat.com/ubi9/ubi-minimal
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            set -e
+            echo "Initializing weather-db..."
+            echo "Creating data directory /var/lib/pgsql/data..."
+            mkdir -p /var/lib/pgsql/data
+            echo "init" > /var/lib/pgsql/data/pg_init
+            echo "Database ready on port 5432"
+            sleep 3600
+        ports:
+        - containerPort: 5432
