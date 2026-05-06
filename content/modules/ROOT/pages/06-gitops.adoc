@@ -331,6 +331,8 @@ Click into the application and check the **Last Sync** timestamp - it will show 
 
 You can also click on `managed-project` at the top of the resource tree and look at the **Events** tab to see the sync history - you'll see ArgoCD detected the drift and automatically resynced.
 
+image::gitops-events-sync-history.png[ArgoCD Events tab showing drift detection and automatic resync]
+
 This is how production clusters stay compliant. No matter what manual changes someone makes, ArgoCD continuously enforces the configuration defined in Git.
 
 == When to Use GitOps
