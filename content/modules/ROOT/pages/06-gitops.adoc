@@ -329,7 +329,7 @@ image::gitops-selfheal-synced.png[ArgoCD dashboard showing managed-project still
 
 Click into the application and check the **Last Sync** timestamp - it will show a recent sync that was triggered by self-heal, not by you.
 
-You can also click on the `compute-quota` ResourceQuota and look at the **Events** tab to see the sync history - you'll see ArgoCD detected the drift and automatically resynced.
+You can also click on `managed-project` at the top of the resource tree and look at the **Events** tab to see the sync history - you'll see ArgoCD detected the drift and automatically resynced.
 
 This is how production clusters stay compliant. No matter what manual changes someone makes, ArgoCD continuously enforces the configuration defined in Git.
 
