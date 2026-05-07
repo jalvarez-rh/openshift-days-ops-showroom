@@ -195,12 +195,12 @@ image::observe-cluster-metrics-dashboard.png[Kubernetes Cluster Metrics Dashboar
 
 1. Navigate to **Observe → Metrics**
 2. Try this PromQL query:
-
++
 [source,role="copypaste"]
 ----
 sum(rate(container_cpu_usage_seconds_total[5m])) by (namespace)
 ----
-
++
 3. Click **Run Queries**
 
 You'll see CPU usage broken down by namespace. Look at which namespaces are consuming the most - `openshift-monitoring` and `openshift-etcd` are usually at the top because they run the cluster's own infrastructure. All of this was available the moment the cluster came up.
