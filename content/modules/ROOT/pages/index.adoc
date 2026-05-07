@@ -408,9 +408,9 @@ version   4.x       True        False         32m     Cluster version is 4.x
 ==== View Available Upgrades (Console)
 
 1. Navigate to **Administration → Cluster Settings**
-
++
 image::cluster-settings-details.png[Cluster Settings Details Tab]
-
++
 2. Click **Select a version** button (if available)
 3. See available upgrade paths
 
