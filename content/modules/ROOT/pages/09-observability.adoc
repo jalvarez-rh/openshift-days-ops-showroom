@@ -124,13 +124,13 @@ spec:
   - name: ops-track
     rules:
     - alert: HighPodRestartRate
-      expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
-      for: 5m
+      expr: increase(kube_pod_container_status_restarts_total[5m]) > 2
+      for: 1m
       labels:
         severity: warning
       annotations:
         summary: "Pod {{ \$labels.pod }} restarting frequently"
-        description: "Pod {{ \$labels.pod }} in {{ \$labels.namespace }} has restarted more than 3 times in 15 minutes."
+        description: "Pod {{ \$labels.pod }} in {{ \$labels.namespace }} has restarted more than 2 times in 5 minutes."
 EOF
 ----
 
@@ -168,7 +168,7 @@ NOTE: It may take a minute or two for Prometheus to pick up the new rule. If you
 
 image::alerting-rules-search.png[Alerting Rules showing custom HighPodRestartRate rule]
 
-Click on the rule to see its details. After about 5-7 minutes (once the pod has restarted 3+ times and the `for: 5m` duration passes), you'll see the alert transition from **Inactive** → **Pending** → **Firing**:
+Click on the rule to see its details. After about 2-3 minutes (once the pod has restarted a few times and the `for: 1m` duration passes), you'll see the alert transition from **Inactive** → **Pending** → **Firing**:
 
 image::alerting-rule-detail.png[HighPodRestartRate rule detail showing expression and active alerts]
 
