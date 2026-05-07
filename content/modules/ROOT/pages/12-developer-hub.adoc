@@ -385,6 +385,8 @@ catalog_entities_count{namespace="backstage"}
 
 You should see the catalog entity counts broken down by kind - the same components, templates, and groups you explored in the catalog earlier, now visible as metrics.
 
+image::rhdh-metrics-catalog-entities.png[Prometheus metrics showing catalog entity counts by kind]
+
 Try another query to see API traffic:
 
 [source,promql,role="copypaste"]
@@ -393,6 +395,8 @@ sum(rate(http_server_duration_count{namespace="backstage"}[5m]))
 ----
 
 This shows the request rate to RHDH - if this drops to zero, the portal is down. If it spikes, something is hammering the API.
+
+image::rhdh-metrics-request-rate.png[Prometheus metrics showing RHDH request rate]
 
 TIP: These are the same metrics Prometheus collects for any workload with a ServiceMonitor. RHDH is just another workload being monitored by the built-in Prometheus stack.
 
