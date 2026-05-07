@@ -232,7 +232,7 @@ Open a second terminal or run this in the background:
 
 [source,bash,role="execute"]
 ----
-oc run load-generator --image=busybox --restart=Never -- /bin/sh -c "while true; do wget -q -O- http://demo-app:8080 > /dev/null; done"
+oc run load-generator --image=registry.access.redhat.com/ubi9/ubi-minimal --restart=Never -- /bin/sh -c "while true; do curl -s -o /dev/null http://demo-app:8080; done"
 ----
 
 === Watch the Autoscaling
