@@ -213,7 +213,7 @@ spec:
     spec:
       containers:
       - name: mailpit
-        image: docker.io/axllent/mailpit:latest
+        image: quay.io/openshift-workshop-applications/mailpit:v1.29.7
         ports:
         - containerPort: 8025
           name: web
