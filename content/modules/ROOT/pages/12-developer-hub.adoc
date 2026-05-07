@@ -19,17 +19,6 @@ In this module you'll explore a live Developer Hub that multiple teams are alrea
 
 image::diagrams/12_devhub.png[Red Hat Developer Hub Architecture, 400, align=center]
 
-== Set Up the Environment
-
-First, run the setup script to populate Developer Hub with multiple teams, services, and a working software template. This simulates an organization where RHDH is already in use:
-
-[source,bash,role="execute"]
-----
-bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/setup-developer-hub.sh)
-----
-
-NOTE: This takes approximately 4-5 minutes. The script creates team namespaces with workloads, configures plugins, populates the software catalog, and sets up a self-service template. Wait for it to complete before proceeding.
-
 == Explore the Developer Portal
 
 === Step 1: Access Developer Hub
