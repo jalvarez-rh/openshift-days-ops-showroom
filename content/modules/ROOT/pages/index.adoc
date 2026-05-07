@@ -79,7 +79,7 @@ TIP: Highlighted command blocks are **clickable** - they switch to the Terminal 
 |Area |What you'll do
 
 |**Platform Fundamentals**
-|Verify cluster health, read etcd dashboards, deploy an app and expose it in 30 seconds
+|Verify cluster health, check etcd metrics, deploy an app and expose it in 30 seconds
 
 |**Application Operations**
 |Deploy workloads, break a readiness probe on purpose, scale with HPA under real load, configure network policies

@@ -285,14 +285,28 @@ oc delete project storage-test &>/dev/null &
 
 === Step 6: Verify etcd Health
 
-You've already seen the Prometheus monitoring stack in the Platform Overview. For post-installation verification, the most important dashboard is **etcd** - the distributed key-value store that holds all cluster state.
+etcd is the distributed key-value store that holds all cluster state. If etcd is unhealthy, everything is unhealthy. Two key metrics to check after installation:
 
-In the **OCP Console**, navigate to **Observe -> Dashboards** and select the **etcd** dashboard. Key panels to check:
+* **Leader elections** - should be 0 or very low. Frequent leader elections indicate disk I/O problems or network latency between control plane nodes.
+* **Disk sync duration** - if fsync times are consistently above 10ms, etcd performance will suffer and `oc` commands will start timing out.
 
-* **Total Leader Elections Per Day** - should be 0 or very low. Frequent leader elections indicate disk I/O problems or network latency between control plane nodes - the kind of issue that causes cascading API failures at 2am.
-* **Disk Sync Duration** - if fsync times are consistently above 10ms, etcd performance will suffer and `oc` commands will start timing out.
+Check both via the **OCP Console** at **Observe -> Metrics**. Enter this query and click **Run Queries**:
 
-image::installation-images/etcd-dashboard.png[etcd dashboard showing cluster health metrics]
+[source,promql,role="copypaste"]
+----
+increase(etcd_server_leader_changes_seen_total[24h])
+----
+
+You should see 0 elections across all etcd members - that's healthy.
+
+Now check disk sync times:
+
+[source,promql,role="copypaste"]
+----
+histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m]))
+----
+
+This shows the 99th percentile WAL fsync latency per etcd member. Values under 10ms are ideal. Workshop clusters may show higher values due to shared storage - that's expected.
 
 Also verify the monitoring operator is healthy:
 
