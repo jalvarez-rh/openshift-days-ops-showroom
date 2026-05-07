@@ -193,7 +193,7 @@ Verify this on the weather app:
 oc get deployments -n ops-track-demo -o custom-columns='NAME:.metadata.name,BACKSTAGE-ID:.spec.template.metadata.labels.backstage\.io/kubernetes-id'
 ----
 
-All 5 deployments should show `weather-app` as their backstage ID. If any deployment has a wrong or missing label, it won't appear in the Kubernetes tab. You'll see exactly this during the troubleshooting section.
+The weather microservice deployments should show `weather-app` as their backstage ID. You may see `weather-db` with `<none>` - that's the debugging exercise pod from Module 05, which isn't part of the catalog. Any deployment with a wrong or missing label won't appear in the Kubernetes tab. You'll see exactly this during the troubleshooting section.
 
 == Watch Self-Service in Action
 
