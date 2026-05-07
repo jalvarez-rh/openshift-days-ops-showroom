@@ -322,6 +322,9 @@ NOTE: Node names and count vary by deployment. Production clusters typically hav
 ==== Check Node Details (Console)
 
 1. Navigate to **Compute → Nodes**
++
+image::compute-nodes-menu.png[Compute menu showing Nodes option]
++
 2. Click on any node
 3. The **Overview** tab immediately shows you:
    - **Active alerts** - you'll likely see alerts like `KubeCPUOvercommit` or `KubeMemoryOvercommit` at the top. These fire when the **total CPU/memory limits** of all pods on the node exceed the node's capacity. This means if every pod tried to burst to its maximum simultaneously, the node couldn't handle it and would throttle pods.
