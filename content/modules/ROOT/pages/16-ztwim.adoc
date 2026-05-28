@@ -1,0 +1,41 @@
+= Zero Trust Workload Identity Manager
+
+== Module Overview
+
+**Duration:** 20 minutes +
+**Format:** Hands-on lab +
+**Audience:** Security Engineers, Platform Engineers, IT Operations
+
+== Learning Objectives
+
+By the end of this module, you will:
+
+* Deploy the Red Hat Zero-Trust Workload Identity Management (ZTWIM) solution
+
+== Deploy the Red Hat Zero Trust Workload Identity Management (ZTWIM) solution
+
+The Zero Trust Workload Identity Manager is an OpenShift operator that deploys and manages SPIFFE/SPIRE components (`spire-server`, `spire-agent`, `spiffe-csi-driver`, and `oidc-discovery-provider`) for workload identity. See the upstream project for architecture details: https://github.com/openshift/zero-trust-workload-identity-manager[zero-trust-workload-identity-manager on GitHub].
+
+.Procedure
+. Run the install script from the bastion (cluster-admin required):
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/setup-scripts/install-ztwim.sh)
+----
++
+The script clones the upstream repository, builds the operator and OLM bundle images into the cluster registry, installs the operator, and applies the sample custom resources from `config/samples/`.
++
+. Verify the operator is running:
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc get csv,pods -n zero-trust-workload-identity-manager
+oc get zerotrustworkloadidentitymanager,spireserver,spireagent -A
+----
++
+[NOTE]
+====
+Installation requires OpenShift 4.19+, `podman`, and egress to `ghcr.io` for SPIRE component images. The first run can take several minutes while images build and pull.
+====
+

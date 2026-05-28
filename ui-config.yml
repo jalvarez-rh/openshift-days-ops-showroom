@@ -24,3 +24,4 @@ tabs:
 
   - name: Developer Hub
     url: 'https://backstage-developer-hub-backstage.${DOMAIN}'
+
