@@ -1,14 +1,14 @@
 = Installation & Verification
 :page-toclevels: 1
 
-**Duration:** 25 minutes +
+**Duration:** 10 minutes +
 **Format:** Hands-on verification
 
 == What You're Checking
 
 These are the same checks you'd run after an installation, after an upgrade, or when something feels off - ClusterOperators, node config, networking, storage, and etcd health.
 
-Your cluster was provisioned using IPI (Installer-Provisioned Infrastructure), which automates compute, network, storage, and DNS. OpenShift also supports UPI, Agent-based/Assisted Installer for bare metal, and managed offerings (ROSA, ARO). See the link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[Installation Documentation] for details.
+Your cluster was provisioned using IPI (Installer-Provisioned Infrastructure), which automates compute, network, storage, and DNS. OpenShift also supports UPI, Agent-based/Assisted Installer for bare metal, and managed offerings (ROSA, ARO). See the link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[Installation Documentation, window=blank] for details.
 
 TIP: Two things that **cannot be changed** after installation: the **pod network CIDR** and the **service network CIDR**. If they overlap with your corporate network, you're rebuilding the cluster.
 
@@ -330,6 +330,6 @@ monitoring   4.20.x    True        False         False      3h
 
 === Additional Resources
 
-* **Installing OpenShift:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[Installation Documentation]
-* **Verifying Cluster Status:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/support/troubleshooting#verifying-node-health[Troubleshooting Guide]
-* **ClusterOperators Reference:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/operators/operator-reference[Operator Reference]
+* **Installing OpenShift:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/installation_overview/index[Installation Documentation, window=blank]
+* **Verifying Cluster Status:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/support/troubleshooting#verifying-node-health[Troubleshooting Guide, window=blank]
+* **ClusterOperators Reference:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/operators/operator-reference[Operator Reference, window=blank]

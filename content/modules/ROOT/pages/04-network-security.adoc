@@ -544,7 +544,7 @@ oc get dns cluster -o yaml
 
 === Additional Resources
 
-* **OVN-Kubernetes:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/ovn-kubernetes_network_plugin/index[OVN-Kubernetes network plugin]
-* **NetworkPolicy:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/network-policy[About network policy]
-* **EgressFirewall:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/configuring-egress-firewall-ovn[Configuring an egress firewall for a project]
-* **EgressIP:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/configuring-egress-ips-ovn[Configuring an egress IP address]
+* **OVN-Kubernetes:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/ovn-kubernetes_network_plugin/index[OVN-Kubernetes network plugin, window=blank]
+* **NetworkPolicy:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/network-policy[About network policy, window=blank]
+* **EgressFirewall:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/configuring-egress-firewall-ovn[Configuring an egress firewall for a project, window=blank]
+* **EgressIP:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/networking/configuring-egress-ips-ovn[Configuring an egress IP address, window=blank]

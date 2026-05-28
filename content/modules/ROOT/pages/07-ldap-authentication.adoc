@@ -10,7 +10,7 @@ Your cluster is running with an HTPasswd admin account - fine for initial setup,
 
 OpenShift's OAuth server supports multiple identity providers - LDAP, OpenID Connect, HTPasswd, GitHub, GitLab, Google, and more. We're using LDAP here because it's the most common enterprise setup and demonstrates group synchronization. The OIDC module covers the modern alternative.
 
-TIP: For the full list of supported identity providers, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/understanding-identity-provider[Understanding identity providers].
+TIP: For the full list of supported identity providers, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/understanding-identity-provider[Understanding identity providers, window=blank].
 
 image::diagrams/07_08_rbac.png[OpenShift RBAC - Users Groups and Role Bindings, align=center]
 
@@ -116,7 +116,7 @@ The `oauth-cluster.yaml` file configures the LDAP identity provider. Key element
 * **ca**: Certificate to validate LDAP server SSL
 * **url**: LDAP server location and search filter
 
-For detailed LDAP configuration, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/configuring-ldap-identity-provider[Configuring an LDAP identity provider].
+For detailed LDAP configuration, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/configuring-ldap-identity-provider[Configuring an LDAP identity provider, window=blank].
 
 **Monitor the OAuth operator rollout:**
 
@@ -331,7 +331,7 @@ image::ldap-clusterrolebinding-reader.png[Cluster-wide RoleBindings showing ose-
 
 The first row shows `ose-fancy-dev` bound to `cluster-reader` across all namespaces - exactly what we just configured.
 
-For more on roles, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/using-rbac[Using RBAC to define and apply permissions].
+For more on roles, see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/using-rbac[Using RBAC to define and apply permissions, window=blank].
 
 **Test as a regular user:**
 
@@ -568,7 +568,7 @@ The CronJob would:
 - Mount the group sync configuration from a ConfigMap
 - Execute `oc adm groups sync` with the `--confirm` flag
 
-For complete implementation details, see the link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/ldap-syncing#ldap-syncing-running-all-ldap-sync_configuring-ldap-syncing[official documentation on automating LDAP sync].
+For complete implementation details, see the link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/ldap-syncing#ldap-syncing-running-all-ldap-sync_configuring-ldap-syncing[official documentation on automating LDAP sync, window=blank].
 
 **For this lab, manual group sync is sufficient** for learning purposes.
 
@@ -588,11 +588,11 @@ You configured LDAP authentication end-to-end: connected to an external director
 
 === Additional Resources
 
-* **Authentication and Authorization Guide:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/index[Official documentation]
-* **Identity Providers Overview:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/understanding-identity-provider[Understanding identity providers]
-* **LDAP Configuration:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/configuring-ldap-identity-provider[Configuring LDAP identity provider]
-* **RBAC Documentation:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/using-rbac[Using RBAC]
-* **Group Sync:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/ldap-syncing[Syncing LDAP groups]
+* **Authentication and Authorization Guide:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/index[Official documentation, window=blank]
+* **Identity Providers Overview:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/understanding-identity-provider[Understanding identity providers, window=blank]
+* **LDAP Configuration:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/configuring-ldap-identity-provider[Configuring LDAP identity provider, window=blank]
+* **RBAC Documentation:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/using-rbac[Using RBAC, window=blank]
+* **Group Sync:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/authentication_and_authorization/ldap-syncing[Syncing LDAP groups, window=blank]
 
 === Cleanup
 
