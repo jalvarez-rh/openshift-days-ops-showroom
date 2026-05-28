@@ -10,32 +10,79 @@
 
 By the end of this module, you will:
 
-* Deploy the Red Hat Zero-Trust Workload Identity Management (ZTWIM) solution
+* Install the Red Hat Zero Trust Workload Identity Manager (ZTWIM) operator
+* Understand how ZTWIM deploys SPIFFE/SPIRE workload identity on OpenShift
 
-== Deploy the Red Hat Zero Trust Workload Identity Management (ZTWIM) solution
+== About Zero Trust Workload Identity Manager
 
-The Zero Trust Workload Identity Manager is an OpenShift operator that deploys and manages SPIFFE/SPIRE components (`spire-server`, `spire-agent`, `spiffe-csi-driver`, and `oidc-discovery-provider`) for workload identity. See the upstream project for architecture details: https://github.com/openshift/zero-trust-workload-identity-manager[zero-trust-workload-identity-manager on GitHub].
+The Zero Trust Workload Identity Manager is an OpenShift Day-2 operator (provided by Red Hat) that automates SPIFFE/SPIRE components: `spire-server`, `spire-agent`, `spiffe-csi-driver`, and `oidc-discovery-provider`. It issues short-lived, verifiable workload identities instead of long-lived credentials.
+
+Project reference: https://github.com/openshift/zero-trust-workload-identity-manager[zero-trust-workload-identity-manager on GitHub]
+
+== Install the operator
+
+Your cluster already exposes this operator in OperatorHub. Use the console (recommended) or the CLI.
+
+=== Option A — OpenShift console (recommended)
+
+Use the *OpenShift Console* tab in the workshop panel (or open the console in a separate window).
 
 .Procedure
-. Run the install script from the bastion (cluster-admin required):
+. Go to *Ecosystem* → *Operators* → *OperatorHub*.
+. Search for *Zero Trust Workload Identity Manager*.
+. Open the operator tile (provider: *Red Hat*) and click *Install*.
+. On the install screen, use these settings:
 +
+[cols="1,2"]
+|===
+| *Update channel* | `stable-v1` (version 1.0.1)
+| *Installation mode* | *All namespaces on the cluster* (default)
+| *Installed Namespace* | `zero-trust-workload-identity-manager` (create if prompted)
+| *Update approval* | *Automatic*
+|===
++
+. Click *Install* and wait until the install succeeds (typically a few minutes).
+. Go to *Ecosystem* → *Installed Operators*, select project `zero-trust-workload-identity-manager`, and confirm the operator shows *Succeeded*.
++
+Provided APIs include `ZeroTrustWorkloadIdentityManager`, `SpireServer`, `SpireAgent`, `SpiffeCSIDriver`, `SpireOIDCDiscoveryProvider`, and SPIRE cluster resources (`ClusterSPIFFEID`, and others).
+
+=== Option B — CLI subscription (same as the console)
+
+If you prefer the terminal, this matches the console install (catalog subscription only — no local image build):
+
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/setup-scripts/install-ztwim-operator.sh)
+----
+
+=== Option C — Build from upstream (advanced)
+
+For clusters *without* the Red Hat OperatorHub package, use the full installer that builds the operator bundle from GitHub:
+
 [source,bash,subs="+macros,+attributes",role=execute]
 ----
 bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/setup-scripts/install-ztwim.sh)
 ----
-+
-The script clones the upstream repository, builds the operator and OLM bundle images into the cluster registry, installs the operator, and applies the sample custom resources from `config/samples/`.
-+
-. Verify the operator is running:
-+
+
+[NOTE]
+====
+Option C requires `podman`, `git`, and egress to GitHub and `ghcr.io`. Workshop clusters with OperatorHub should use Option A or B.
+====
+
+== Verify the installation
+
 [source,bash,subs="+macros,+attributes",role=execute]
 ----
 oc get csv,pods -n zero-trust-workload-identity-manager
-oc get zerotrustworkloadidentitymanager,spireserver,spireagent -A
 ----
-+
-[NOTE]
-====
-Installation requires OpenShift 4.19+, `podman`, and egress to `ghcr.io` for SPIRE component images. The first run can take several minutes while images build and pull.
-====
 
+You should see a ClusterServiceVersion in phase `Succeeded` and the operator manager pod running.
+
+To list custom resource definitions exposed by the operator:
+
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc api-resources | grep -E 'spire|zerotrust|spiffe'
+----
+
+**Great job!** Continue to the next module when you are ready.

@@ -38,7 +38,7 @@ A comprehensive modular workshop for OpenShift administrators. Modules are selec
 * *link:content/modules/ROOT/pages/13-openshift-lightspeed.adoc[13 - OpenShift Lightspeed]* (10 min) - AI assistant, OLSConfig creation, console integration
 * *link:content/modules/ROOT/pages/14-acm.adoc[14 - ACM Multi-Cluster Management]* (30 min) - ACM, hosted control planes, policy-based governance
 * *link:content/modules/ROOT/pages/15-security.adoc[15 - Advanced Cluster Security]* (15 min) - Workload scanning with ACS, compliance, zero-trust identity
-* *link:content/modules/ROOT/pages/16-secrets-management.adoc[16 - Secrets Management (HashiCorp Vault)]* - _TBD_
+* *link:content/modules/ROOT/pages/17-secrets-management.adoc[17 - Secrets Management (HashiCorp Vault)]* (25 min) - Vault Helm deploy on OpenShift, UI access, dev-mode lab setup
 
 == Module Selection
 

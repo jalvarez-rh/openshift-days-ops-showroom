@@ -394,6 +394,19 @@ image::acs-security-09.png[RHACS violation detail for package manager policy, li
 If configured properly, each violation record should be pushed to a Security Information and Event Management (SIEM) application and is available to be retrieved via the API. The forensic data shown in the UI is recorded, including the timestamp, process user IDs, process arguments, process ancestors, and enforcement action.
 ====
 
+=== Clean up
+
+.Procedure
+. Run the following command in your terminal to clean up the applications:
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc delete -f k8s-deployment-manifests/emojivoto --recursive
+oc delete -f k8s-deployment-manifests/apache-struts --recursive
+oc delete -f k8s-deployment-manifests/dvwa --recursive
+oc delete -f k8s-deployment-manifests/log4shell --recursive
+oc delete -f skupper-demo/ --recursive
+----
 image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ODhkZThkZXVxb2twdHloazAzc2VhNWJpeWowenRpeTJoczY3MTAyZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/RIjVnmAtOD4l4c2Ert/giphy.gif[Fun celebration, link=self, window=blank, width=400]
 
 **Great job!** Thanks for playing along and checking out the RHACS basics. You're ready to move on to the next module in the left navigation when you are ready.

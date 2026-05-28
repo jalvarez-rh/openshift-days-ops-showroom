@@ -1,0 +1,21 @@
+# HashiCorp Vault Helm values for OpenShift workshop labs.
+# Chart: https://github.com/hashicorp/vault-helm
+# Docs: https://developer.hashicorp.com/vault/docs/platform/k8s/helm
+
+global:
+  openshift: true
+
+injector:
+  enabled: true
+
+server:
+  # Dev mode: auto-initialized and unsealed for hands-on labs only (data lost on restart).
+  dev:
+    enabled: true
+    devRootToken: "root"
+
+  ui:
+    enabled: true
+
+  route:
+    enabled: true
