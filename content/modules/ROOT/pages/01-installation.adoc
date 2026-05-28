@@ -1,7 +1,7 @@
 = Installation & Verification
 :page-toclevels: 1
 
-**Duration:** 25 minutes +
+**Duration:** 10 minutes +
 **Format:** Hands-on verification
 
 == What You're Checking
