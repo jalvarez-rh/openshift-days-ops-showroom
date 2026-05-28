@@ -1,0 +1,412 @@
+= Red Hat Advanced Cluster Security (RHACS)
+
+== Module Overview
+
+**Duration:** 20 minutes +
+**Format:** Hands-on lab +
+**Audience:** Security Engineers, Platform Engineers, IT Operations
+
+== Learning Objectives
+
+By the end of this module, you will:
+
+* Deploy a bunch of insecure applications
+* Setup compliance reporting and compliance checks
+* Scan workloads with Red Hat Advanced Cluster Security (RHACS)
+
+== Deploy a bunch of insecure applications
+
+.Procedure
+. Run the following command in your terminal to deploy the insecure applications:
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+git clone https://github.com/mfosterrox/demo-applications.git
+cd demo-applications
+oc apply -f k8s-deployment-manifests/emojivoto --recursive
+oc apply -f k8s-deployment-manifests/apache-struts --recursive
+oc apply -f k8s-deployment-manifests/dvwa --recursive
+oc apply -f k8s-deployment-manifests/log4shell --recursive
+oc apply -f skupper-demo/ --recursive
+----
++
+You'll see applications being deployed (output truncated):
++
+----
+namespace/emojivoto created
+namespace/apache-struts created
+namespace/dvwa created
+namespace/emojivoto configured
+namespace/juice-shop created
+namespace/log4shell created
+namespace/nodejs-goof-vuln-main created
+----
+
+== Security and Environment Insights
+
+**Let's review the basics of RHACS.**
+
+=== *RHACS Basics*
+RHACS provides essential tools for security workflows in Kubernetes, including:
+
+- Vulnerability management (Platform, workloads, Nodes, and Virtual Machines)
+- Policy lifecycle management (Policy-as-Code)
+- Compliance auditing
+- Risk profiling
+- Threat detection and response
+
+With RHACS, you can ensure your Kubernetes clusters remain secure and compliant across CNCF supported Kubernetes environment.
+
+=== RHACS Console Access
+
+You can access the application via the showroom tab to your right or via a separate browser tab or window: {acs_route}[window=blank]
+
+Administrator login is available with:
+
+[cols="1,1"]
+|===
+| *RHACS Console Username:* | {acs_portal_username}
+| *RHACS Console Password:* | {acs_portal_password}
+|===
+
+[[rhacs-compliance-operator-installation-and-compliance-checks]]
+== Compliance Checks with RHACS and the Compliance Operator
+
+Production clusters and applications should meet your security standards and internal policies consistently. RHACS, together with the OpenShift compliance operator, helps you measure that posture and spot gaps before they reach production.
+
+First, let's add a configuration to the local cluster so you can see the difference between compliance check results.
+
+=== Make a Simple Cluster Change to Pass the Compliance Check
+
+Let's focus on the *ocp4-e8* compliance checks and see how we can pass the `ocp4-e8-ocp-allowed-registries` standard. Follow the steps below to pass the check for the production cluster.
+
+.Procedure
+. Copy and paste the following into the *Terminal* tab on the right.
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc create -f - <<EOF
+---
+apiVersion: config.openshift.io/v1
+kind: Image
+metadata:
+  name: cluster
+spec:
+  registrySources:
+    allowedRegistries:
+      - quay.io
+      - registry.redhat.io
+      - registry.access.redhat.com
+      - image-registry.openshift-image-registry.svc:5000
+      - gcr.io
+      - docker.io
+      - {quay_console_url}
+EOF
+----
++
+. Check that your changes have been accepted:
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc get image.config.openshift.io/cluster -o yaml | grep allowedRegistries -A 10
+----
++
+**Output**
+[source,bash,subs="+macros,+attributes"]
+----
+    allowedRegistries:
+    - quay.io
+    - registry.redhat.io
+    - registry.access.redhat.com
+    - image-registry.openshift-image-registry.svc:5000
+    - gcr.io
+    - docker.io
+    - https://quay.apps.cluster-j9vv7.dynamic.redhatworkshops.io
+status:
+  internalRegistryHostname: image-registry.openshift-image-registry.svc:5000
+----
+
+Great! Now let's set up compliance checks for your local cluster.
+
+=== Set up a Compliance Scan
+
+Follow the steps below to set up the compliance scan.
+
+.Procedure
+. Head to the *RHACS* tab in the workshop panel and click on the *Compliance* → *OpenShift Schedules* tab.
++
+image::acs-security-01.png[RHACS Compliance OpenShift Schedules tab, link=self, window=blank, width=100%]
+
+. Next, click on the *Create scan schedule*.
++
+image::acs-security-02.png[Create scan schedule dialog, link=self, window=blank, width=100%]
+
+. Next, fill in the form with the following information:
+* *Name*:
++
+[source,sh,subs="attributes",role=execute]
+----
+acs-catch-all
+----
+* *Description*:
++
+[source,sh,subs="attributes",role=execute]
+----
+Daily compliance scan for all profiles covering CIS, E8, Moderate, NERC-CIP, PCI-DSS, and STIG standards.
+----
+* *Frequency*: `Daily`
+* *Time*: 00:00 UTC
+
+. Click *Next*
+. Select the clusters: *production*
+. Click *Next*
+. Add the following profiles:
+* `ocp4-cis` 
+* `ocp4-e8` 
+* `ocp4-nerc-cip`
+* `ocp4-pci-dss` 
+* `ocp4-stig` 
+
+[NOTE]
+====
+ There are many profiles to select but here we are selecting the most common profiles that are used in most organizations. If you want to only add the ones necessary for the lab. Select `ocp4-cis` & `ocp4-e8` only.
+====
+
+[start=8]
+. Click *Next*
++
+[INFO]
+====
+You can send notifications via email, get details via API or download reports via the console. However, we will not add a delivery destination so we will skip this step.
+====
++
+. Click *Next*
+. Review your masterpiece and click *Save*
+. The scan should start automatically. If not, you can always use the menu (three dots) linked to the schedule and select *Run scan* to trigger a manual scan.
++
+image::acs-security-03.png[Scan schedule menu with Run scan option, link=self, window=blank, width=100%]
++
+image::acs-security-04.png[Compliance scan running, link=self, window=blank, width=100%]
++
+. Head over to the OpenShift coverage section where you can view all of the details from the scan. Click on the *Compliance* → *OpenShift Coverage* → *E8* tab to view the results.
++
+image::acs-security-05.png[E8 compliance standard overview, link=self, window=blank, width=100%]
++
+[INFO]
+====
+Remember that we passed the check for the production cluster by adding the allowed registries to the cluster configuration.
+====
+. Let's take a look at the details of the check by scrolling down and clicking on the passing standard `ocp4-e8-ocp-allowed-registries`.
++
+image::acs-security-06.png[Allowed registries compliance clusters, link=self, window=blank, width=100%]
++
+[INFO]
+====
+This view shows you all of the clusters and their status for the check. As you can see, the production cluster is passing.
+====
++
+. Click on the *Details* tab to view the description, rationale, and remediation for the compliance check.
++
+image::acs-security-07.png[Allowed registries compliance check details, link=self, window=blank, width=100%]
++
+[INFO]
+====
+This view shows you the details of the check for the production cluster. As you can see, the production cluster is passing.
+====
+
+image::https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcHI1ZGQwYWNnd3doY2s4MDNpenZ1MWlzeDlqNWhyNzF5c2JveWNybSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xTQXENNW77nUsNVmV4/giphy.gif[Fun celebration, link=self, window=blank, width=400]
+
+**Great job!** Compliance reporting can be a pain. RHACS and OpenShift want to make it easy for your teams to pass audits and compliance checks across regional barriers.
+
+== Runtime Security and Immutable Workloads
+
+In production Kubernetes environments, strict control over what runs inside your cluster is essential for security. Monitoring for file integrity and anomalous behavior helps you detect drift from approved images and configurations.
+
+RHACS includes built-in policies that detect and block risky behaviors such as unauthorized access attempts, persistent threats, lateral movement, and file integrity violations. These policies help you enforce the immutable container principle -- containers should only run exactly what you approved, with no unexpected changes.
+
+== Use Policy-as-Code to Block Anomalous Behavior at Runtime
+
+Package managers such as apt, apk, yum, and dnf are useful on virtual machines, but they have no place in production containers. Allowing them enables uncontrolled software installation, increases the attack surface in your cluster, and breaks auditability and immutability -- core expectations for production workloads.
+
+*Policy-as-Code is an effective way to scale this protection across your clusters.*
+
+Let's look at an example of how we can use Policy-as-Code to block anomalous behavior at runtime.
+
+.Procedure
+. *Apply the following policy configuration into the terminal*. It will create a security policy to enforce runtime protection against package manager execution. 
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc apply -f - <<EOF
+---
+apiVersion: config.stackrox.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: alpine-linux-package-manager-execution-patient-portal-enforcement
+  namespace: stackrox
+spec:
+  policyName: Alpine Linux Package Manager Execution - Patient-Portal Enforcement
+  description: Alert when the Alpine Linux package manager (apk) is executed at runtime
+  rationale: Use of package managers at runtime indicates that new software may be being introduced into containers while they are running.
+  remediation: Run 'apk --purge del apk-tools' in the image build for production containers. Change applications to no longer use package managers at runtime, if applicable.
+  categories:
+    - Anomalous Activity
+    - Package Management
+  lifecycleStages:
+    - RUNTIME
+  eventSource: DEPLOYMENT_EVENT
+  severity: LOW_SEVERITY
+  enforcementActions:
+    - FAIL_KUBE_REQUEST_ENFORCEMENT
+    - KILL_POD_ENFORCEMENT
+  policySections:
+    - policyGroups:
+        - fieldName: Process Name
+          booleanOperator: OR
+          values:
+            - value: apk
+            - value: apk-tools
+            - value: apk update
+            - value: apk add
+            - value: apk remove
+            - value: apk upgrade
+            - value: apk del
+            - value: apk cache
+            - value: apk clean
+            - value: apk info
+            - value: apk show
+            - value: apk version
+  mitreAttackVectors:
+    - tactic: TA0011
+      techniques:
+        - T1105
+  criteriaLocked: false
+  mitreVectorsLocked: false
+  isDefault: false
+EOF
+----
++
+====
+Next, you will use `tmux` to watch OpenShift events while running the test so you can see how RHACS enforces the policy at runtime.
+====
++
+. From the terminal, start tmux with two panes:
++
+[source,sh,role=execute]
+----
+tmux new-session \; split-window -v \; attach
+----
++
+. Next, run a watch on OpenShift events in the first shell pane:
++
+[source,sh,role=execute]
+----
+oc get events -n patient-portal -w
+----
++
+. Press *Ctrl+b, o* to switch to the next pane. (Ctrl+b THEN o)
++
+[IMPORTANT]
+====
+`Ctrl+b` is the prefix key for tmux. `o` is the command to switch to the next pane.
+====
++
+. Exec into our *patient-frontend* application by getting the pod details and adding them to the following command.
++
+[source,sh,role=execute]
+----
+POD=$(oc get pod -n patient-portal -l app=frontend -o jsonpath="{.items[0].metadata.name}")
+oc exec -n patient-portal $POD -i --tty -- /bin/sh
+----
++
+.Sample output
+[source,bash]
+----
+[demo-user@bastion ~]$ POD=$(oc get pod -n patient-portal -l app=frontend -o jsonpath="{.items[0].metadata.name}")
+oc exec -n patient-portal $POD -i --tty -- /bin/sh
+/home/fritz $
+----
++
+. Run the alpine package manager in this shell:
++
+[source,sh,role=execute]
+----
+apk update
+----
+
+. Examine the output and expect to see that the package manager attempts to perform an update operation:
++
+[source,texinfo,subs="attributes"]
+----
+/home/fritz $ apk update
+ERROR: Unable to lock database: Permission denied
+ERROR: Failed to open apk database: Permission denied
+/home/fritz $ command terminated with exit code 137
+[demo-user@bastion ~]$
+----
+
+. Examine the oc get events tmux pane (The pane on the bottom), and note that it shows that RHACS detected the package manager invocation and deleted the pod:
++
+[source,texinfo,subs="attributes"]
+----
+^C^C[demo-user@bastion ~]$ oc get events -n patient-portal -w
+LAST SEEN   TYPE      REASON                 OBJECT                           MESSAGE
+50s         Normal    Killing                pod/frontend-8667d5c56b-f9fcj    Stopping container frontend
+50s         Normal    Scheduled              pod/frontend-8667d5c56b-s6dph    Successfully assigned patient-portal/frontend-8667d5c56b-s6dph to ip-10-0-61-109.us-east-2.compute.internal
+49s         Normal    AddedInterface         pod/frontend-8667d5c56b-s6dph    Add eth0 [10.131.0.167/23] from ovn-kubernetes
+49s         Normal    Pulling                pod/frontend-8667d5c56b-s6dph    Pulling image "quay-czscm.apps.cluster-czscm.czscm.sandbox478.opentlc.com/quayadmin/frontend:0.1"
+49s         Normal    Pulled                 pod/frontend-8667d5c56b-s6dph    Successfully pulled image "quay-czscm.apps.cluster-czscm.czscm.sandbox478.opentlc.com/quayadmin/frontend:0.1" in 46ms (46ms including waiting). Image size: 117738460 bytes.
+49s         Normal    Created                pod/frontend-8667d5c56b-s6dph    Created container frontend
+49s         Normal    Started                pod/frontend-8667d5c56b-s6dph    Started container frontend
+50s         Normal    SuccessfulCreate       replicaset/frontend-8667d5c56b   Created pod: frontend-8667d5c56b-s6dph
+50s         Warning   StackRox enforcement   deployment/frontend              A pod (frontend-8667d5c56b-f9fcj) violated StackRox policy "Alpine Linux Package Manager Execution - Enforce" and was killed
+----
++
+NOTE: After a few seconds, you can see the pod is deleted and recreated. In your tmux shell pane, note that your shell session has terminated and that you are returned to the Bastion VM command line.
+
+. Exit the tmux session and return to the bastion host terminal:
+.. If you are still inside the container shell, type `exit` to exit the container.
+.. Press `Ctrl+C` to stop the `watch` command running in the tmux pane.
+.. Type `exit` or `Ctrl-D` to exit the tmux session and return to the bastion host terminal.
+
+*Congrats!* 
+
+You have successfully stopped yourself from running a (Potentially breaking) update ! However, the security investigative process continues, as you have now raised a flag that must be triaged! You will triage our violations after you look at deploy time policies.
+
+[[violations-reporting-audit-compliance]]
+== Violations and Reporting for Audit and Compliance
+
+Event audits support security best practices and give your team a clear record of what happened when a policy fired. RHACS captures forensic detail for each violation so you can investigate, report, and tune policies with confidence.
+
+*Procedure*
+
+. Switch back to the RHACS console in your browser and navigate to the *Violations* page.
+. Filter by the policy violation *Policy*, *Name*, `r/alpine` OR by the most recent policy violations (sort by time). You will see a policy violation that has been enforced.
++
+image::acs-security-08.png[RHACS Violations list filtered by policy, link=self, window=blank, width=100%]
++
+. Click on your *Alpine Linux Package Manager Execution - Patient-Portal Enforcement* to view the details.
++
+image::acs-security-09.png[RHACS violation detail for package manager policy, link=self, window=blank, width=100%]
++
+[IMPORTANT]
+====
+If configured properly, each violation record should be pushed to a Security Information and Event Management (SIEM) application and is available to be retrieved via the API. The forensic data shown in the UI is recorded, including the timestamp, process user IDs, process arguments, process ancestors, and enforcement action.
+====
+
+=== Clean up
+
+.Procedure
+. Run the following command in your terminal to clean up the applications:
++
+[source,bash,subs="+macros,+attributes",role=execute]
+----
+oc delete -f k8s-deployment-manifests/emojivoto --recursive
+oc delete -f k8s-deployment-manifests/apache-struts --recursive
+oc delete -f k8s-deployment-manifests/dvwa --recursive
+oc delete -f k8s-deployment-manifests/log4shell --recursive
+oc delete -f skupper-demo/ --recursive
+----
+image::https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3ODhkZThkZXVxb2twdHloazAzc2VhNWJpeWowenRpeTJoczY3MTAyZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/RIjVnmAtOD4l4c2Ert/giphy.gif[Fun celebration, link=self, window=blank, width=400]
+
+**Great job!** Thanks for playing along and checking out the RHACS basics. You're ready to move on to the next module in the left navigation when you are ready.

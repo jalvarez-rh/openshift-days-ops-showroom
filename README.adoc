@@ -38,7 +38,7 @@ A comprehensive modular workshop for OpenShift administrators. Modules are selec
 * *link:content/modules/ROOT/pages/13-openshift-lightspeed.adoc[13 - OpenShift Lightspeed]* (10 min) - AI assistant, OLSConfig creation, console integration
 * *link:content/modules/ROOT/pages/14-acm.adoc[14 - ACM Multi-Cluster Management]* (30 min) - ACM, hosted control planes, policy-based governance
 * *link:content/modules/ROOT/pages/15-security.adoc[15 - Advanced Cluster Security]* (15 min) - Workload scanning with ACS, compliance, zero-trust identity
-* *link:content/modules/ROOT/pages/16-secrets-management.adoc[16 - Secrets Management (HashiCorp Vault)]* - _TBD_
+* *link:content/modules/ROOT/pages/17-secrets-management.adoc[17 - Secrets Management (HashiCorp Vault)]* (25 min) - Vault Helm deploy on OpenShift, UI access, dev-mode lab setup
 
 == Module Selection
 
@@ -53,24 +53,43 @@ See link:content/modules/ROOT/nav.adoc[nav.adoc] for the conditional navigation 
 
 == Local Development
 
-=== Using Containers (Recommended)
+=== Using local-build scripts (Recommended)
+
+From the repo root, build and preview the workshop with Podman:
 
 [source,sh]
 ----
-podman run --rm --name antora -v $PWD:/antora:z -p 8080:8080 -i -t ghcr.io/juliaaano/antora-viewer
+./local-build/up.sh
 ----
 
-Open http://localhost:8080 in your browser.
+Open http://localhost:8080/index.html in your browser.
 
-=== Using Antora CLI
+Other commands:
+
+[cols="1,2"]
+|===
+| `./local-build/build.sh` | Generate the static site into `./www/` using `site.yml`
+| `./local-build/serve.sh` | Serve `./www/` with httpd in Podman (port 8080)
+| `./local-build/stop.sh` | Stop the local httpd container
+| `./local-build/reset.sh` | Stop, rebuild, and serve again
+| `./local-build/status.sh` | Show container status
+|===
+
+Optional environment variables (see `local-build/_common.sh`):
+
+* `SHOWROOM_PORT` — host port (default `8080`)
+* `SHOWROOM_PULL=1` — pull the httpd image before starting
+* `SHOWROOM_SITE_YML` — alternate Antora playbook (default `site.yml`)
+
+=== Using Antora CLI directly
 
 [source,sh]
 ----
-npm i -g @antora/cli @antora/site-generator
-antora site.yml
+npm i -g @antora/cli@3.1 @antora/site-generator@3.1
+antora generate site.yml --stacktrace
 ----
 
-Output is generated in `./www/`.
+Output is generated in `./www/`. Serve with `./local-build/serve.sh` or any static file server.
 
 == Theme
 

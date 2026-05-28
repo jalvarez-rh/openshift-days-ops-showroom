@@ -31,13 +31,17 @@ That's your cluster version and update channel. You're in.
 
 == About This Workshop
 
-Every ops team hits the same wall with Kubernetes: the cluster is running, but who handles authentication? How do you back up a namespace someone accidentally deleted? What happens when pods crash at 2am and nobody knows where to look?
+Every ops team hits the same wall with Kubernetes: 
 
-This workshop lets you answer those questions hands-on. You'll break things on purpose and fix them, diagnose real failure modes, configure production security, and see what OpenShift looks like when things go wrong (and how fast you can recover).
+- The cluster is running, but who handles authentication? 
+- How do you back up a namespace someone accidentally deleted? 
+- What happens when pods crash at 2am and nobody knows where to look?
+
+This workshop lets you answer those questions through hands-on exercises. You'll break things and fix them, diagnose real failure modes, configure production security, and see what OpenShift looks like when things go wrong (and how fast you can recover).
 
 === Your Workshop Interface
 
-Your workshop runs in a split-panel interface:
+Your workshop runs in a split-panel interface with the following panels:
 
 * **Left panel** - Instructions (what you're reading now)
 * **Right panel** - Tabbed workspace with your cluster tools
@@ -112,27 +116,24 @@ image::ocp-console-overview.png[OpenShift Administrator Console Overview]
 You can access the console in two ways:
 
 * **OCP Console tab** - Click the **OCP Console** tab at the top of this workshop. The console is embedded directly in the workshop interface so you can follow along without switching windows.
-* **Separate browser tab** - If you prefer a full-screen experience, run this to get the console URL and open it in a new browser tab:
-+
-[source,bash,role="execute"]
-----
-oc whoami --show-console
-----
+* **Separate browser tab** - If you prefer a full-screen experience, you can open the console in a separate browser tab by clicking the URL:
+{openshift_cluster_console_url}[window=blank]
 
-Login with your credentials:
+NOTE: ctrl + click on the URL to open URLs in a new tab.
 
-* Username: `{openshift_cluster_admin_username}`
-* Password: `{openshift_cluster_admin_password}`
+Administrator login credentials:
+
+[cols="1,1"]
+|===
+| *Username:* | {openshift_cluster_admin_username}
+| *Password:* | {openshift_cluster_admin_password}
+|===
 
 === Step 2: Switch to Administrator Perspective
 
-In the top-left corner of the console, you'll see a perspective switcher dropdown that may show **Fleet Management**.
+In the top-left corner of the console, you'll see a perspective switcher dropdown. Make sure **Administrator** is selected.
 
-Click the dropdown and select **Administrator**:
-- Administrator
-- Fleet Management
-
-Make sure **Administrator** is selected.
+If necessary, click the dropdown and select **Administrator** → **Fleet Management**
 
 === Step 3: Dashboard Overview
 
@@ -182,10 +183,10 @@ prometheus-operator-bb6c949f9-6rpnl                     2/2     Running   0     
 2. Click the dropdown labeled **Dashboard** (it may show "API Performance" by default)
 3. Select **Kubernetes / Compute Resources / Cluster** from the dropdown
 4. You'll see real-time metrics:
-   - CPU Usage
-   - Memory Usage
+   - CPU Utilisation
+   - Memory Utilisation
    - Network I/O
-   - Filesystem usage
+   - Filesystem I/O
 
 image::observe-cluster-metrics-dashboard.png[Kubernetes Cluster Metrics Dashboard]
 
@@ -203,7 +204,11 @@ sum(rate(container_cpu_usage_seconds_total[5m])) by (namespace)
 +
 3. Click **Run Queries**
 
-You'll see CPU usage broken down by namespace. Look at which namespaces are consuming the most - `openshift-monitoring` and `openshift-etcd` are usually at the top because they run the cluster's own infrastructure. All of this was available the moment the cluster came up.
+You'll see CPU usage broken down by namespace. This is a useful way to see which namespaces are consuming the most CPU.
+
+NOTE: Look at which namespaces are consuming the most CPU. `openshift-monitoring` and `openshift-etcd` are usually at the top because they run the cluster's own infrastructure. 
+
+All of this was available the moment the cluster came up.
 
 image::prometheus-cpu-by-namespace-query.png[Prometheus Query Results - CPU by Namespace]
 
