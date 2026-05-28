@@ -10,7 +10,8 @@
 //   module_enable_ldap, module_enable_oidc,
 //   module_enable_observability, module_enable_performance,
 //   module_enable_virt, module_enable_devhub, module_enable_ols,
-//   module_enable_acm, module_enable_security
+//   module_enable_acm, module_enable_security,
+//   module_enable_ztwim, module_enable_vault
 
 // Setup & Overview (always shown)
 * xref:index.adoc[Setup & Overview]
@@ -66,6 +67,10 @@ ifeval::["{module_enable_acm}" == "true"]
 endif::[]
 ifeval::["{module_enable_security}" == "true"]
 * xref:15-acs.adoc[Advanced Cluster Security]
+endif::[]
+ifeval::["{module_enable_ztwim}" == "true"]
 * xref:16-ztwim.adoc[Zero Trust Workload Identity]
+endif::[]
+ifeval::["{module_enable_vault}" == "true"]
 * xref:17-secrets-management.adoc[Secrets Management]
 endif::[]
