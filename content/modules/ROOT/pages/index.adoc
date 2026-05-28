@@ -131,9 +131,7 @@ Administrator login credentials:
 
 === Step 2: Switch to Administrator Perspective
 
-In the top-left corner of the console, you'll see a perspective switcher dropdown. Make sure **Administrator** is selected.
-
-If necessary, click the dropdown and select **Administrator** → **Fleet Management**
+In the top-left corner of the console, you'll see a perspective switcher dropdown. Click the dropdown and select **Administrator**.
 
 === Step 3: Dashboard Overview
 
@@ -427,7 +425,6 @@ OpenShift handles upgrades automatically:
 
 - Rolling upgrades of control plane
 - Automated worker node updates
-- Rollback capability
 - Zero-downtime upgrades
 
 === Operator Ecosystem
@@ -439,7 +436,7 @@ Need to add something to the cluster? See how many operators are available right
 oc get packagemanifests -n openshift-marketplace | wc -l
 ----
 
-Hundreds. All certified and ready to install.
+Hundreds of operators ready to install - a mix of Red Hat, certified partner, and community options.
 
 ==== Explore Software Catalog (Console)
 
