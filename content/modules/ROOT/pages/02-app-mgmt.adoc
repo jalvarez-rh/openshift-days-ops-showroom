@@ -5,7 +5,7 @@
 
 === Module Overview
 
-**Duration:** 40 minutes +
+**Duration:** 15-20 minutes +
 **Format:** Hands-on +
 **Audience:** Platform Engineers, Operations Teams
 
@@ -148,6 +148,8 @@ oc scale deployment weathernow --replicas=3
 ----
 
 Now switch to the **OCP Console** tab: **Workloads -> Pods** (project: `app-management`). Watch the new pods appear in real-time with status transitions (Pending → ContainerCreating → Running).
+
+TIP: If you don't see the **Workloads** menu, switch to the **Administrator** perspective using the dropdown in the top left.
 
 image::app-mgmt-scaling-pods.png[Pod list showing 3 weathernow pods after scaling]
 
