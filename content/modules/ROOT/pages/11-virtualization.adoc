@@ -402,7 +402,7 @@ echo "Cleanup running in background - you can continue to the next module"
 
 === Additional Resources
 
-* **OpenShift Virtualization:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/index[Virtualization documentation]
-* **virtctl Reference:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/virt-using-the-cli-tools#virt-virtctl-commands_virt-using-the-cli-tools[virtctl commands]
-* **Live Migration:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/live-migration[Live migration documentation]
-* **VM Snapshots:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/backup-restore[Backup and restore documentation]
+* **OpenShift Virtualization:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/index[Virtualization documentation, window=blank]
+* **virtctl Reference:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/virt-using-the-cli-tools#virt-virtctl-commands_virt-using-the-cli-tools[virtctl commands, window=blank]
+* **Live Migration:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/live-migration[Live migration documentation, window=blank]
+* **VM Snapshots:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/virtualization/backup-restore[Backup and restore documentation, window=blank]

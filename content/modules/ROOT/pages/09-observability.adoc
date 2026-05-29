@@ -218,7 +218,7 @@ Notice the routing:
 
 Click on any email to see the full alert details - alert name, namespace, severity, description, and a link to the Alertmanager UI.
 
-In production, you would replace `mailpit.alert-demo.svc:1025` with your organization's SMTP relay and use real email addresses. Alertmanager also supports Slack, PagerDuty, and webhooks using the same routing structure - see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/monitoring/managing-alerts#sending-notifications-to-external-systems_managing-alerts[Sending notifications to external systems].
+In production, you would replace `mailpit.alert-demo.svc:1025` with your organization's SMTP relay and use real email addresses. Alertmanager also supports Slack, PagerDuty, and webhooks using the same routing structure - see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/monitoring/managing-alerts#sending-notifications-to-external-systems_managing-alerts[Sending notifications to external systems, window=blank].
 
 ==== Restore Alertmanager
 
@@ -655,8 +655,8 @@ oc get tempomonolithic -n tracing-system
 
 === Additional Resources
 
-* **OpenShift Monitoring:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/monitoring/index[Monitoring]
-* **OpenShift Logging Documentation:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/logging/index[Logging]
-* **Logging 6.2 Stack:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/logging/logging-6-2[Logging 6.2]
-* **OpenShift Distributed Tracing:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/distributed_tracing/index[Distributed Tracing]
-* **Red Hat build of OpenTelemetry:** link:https://docs.redhat.com/en/documentation/red_hat_build_of_opentelemetry/[OpenTelemetry]
+* **OpenShift Monitoring:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/monitoring/index[Monitoring, window=blank]
+* **OpenShift Logging Documentation:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/logging/index[Logging, window=blank]
+* **Logging 6.2 Stack:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/logging/logging-6-2[Logging 6.2, window=blank]
+* **OpenShift Distributed Tracing:** link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/distributed_tracing/index[Distributed Tracing, window=blank]
+* **Red Hat build of OpenTelemetry:** link:https://docs.redhat.com/en/documentation/red_hat_build_of_opentelemetry/[OpenTelemetry, window=blank]
