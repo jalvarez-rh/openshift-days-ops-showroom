@@ -37,3 +37,5 @@ asciidoc:
     module_enable_ols: 'true'
     module_enable_acm: 'true'
     module_enable_security: 'true'
+    module_enable_ztwim: 'true'
+    module_enable_vault: 'true'
