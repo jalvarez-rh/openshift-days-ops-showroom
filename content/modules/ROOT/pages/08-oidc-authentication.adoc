@@ -307,7 +307,7 @@ oc auth can-i create deployment -n app-production
 
 Returns: `no` (view-only in production)
 
-This is the standard RBAC pattern - users belong to groups, groups get RoleBindings. With OIDC, the groups are created automatically from the ID token instead of requiring manual sync.
+This is the standard RBAC pattern - users belong to groups, groups get RoleBindings to projects (e.g. edit access to app-development, view access to app-production). With OIDC, the groups are created automatically from the ID token instead of requiring manual sync.
 
 **Restore admin access:**
 
