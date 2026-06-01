@@ -382,7 +382,7 @@ oc get machines.machine.openshift.io -n openshift-machine-api
 
 This shows the underlying compute instances that OpenShift is managing.
 
-**Scaling Workers**
+=== Scaling Workers
 
 To add another worker node, simply scale the MachineSet:
 
