@@ -334,7 +334,7 @@ image::compute-nodes-menu.png[Compute menu showing Nodes option]
 +
 2. Click on any node
 3. The **Overview** tab immediately shows you:
-   - **Status** - you'll likely see alerts like `KubeCPUOvercommit` or `KubeMemoryOvercommit` at the top. These fire when the **total CPU/memory limits** of all pods on the node exceed the node's capacity. This means if every pod tried to burst to its maximum simultaneously, the node couldn't handle it and would throttle pods.
+   - **Status** - at the top you'll see the node is **Ready**, followed by resource warnings in plain English — a red circle for CPU overcommit and a yellow circle for memory approaching capacity. Below that you'll see firing alerts like `ClusterNotUpgradeable` and `AlertmanagerReceiversNotConfigured`. The overcommit warnings mean the **total limits** of all pods exceed the node's capacity — if every pod tried to burst to its maximum simultaneously, the node couldn't handle it and would throttle pods.
 +
 However, look at the **Utilization graphs** below - actual CPU and memory usage is well within capacity. The difference is important: **requests** (what's guaranteed) fit on the node, **limits** (what pods are allowed to burst to) don't. In practice, all pods bursting at once rarely happens, especially in a workshop environment. In production, you'd either right-size your limits, add nodes, or accept the overcommit if your workloads don't burst together.
    - **Utilization graphs** - CPU, Memory, Filesystem, and Network over time. Compare "available" to actual usage - that tells you the real capacity story, not the theoretical limits.
