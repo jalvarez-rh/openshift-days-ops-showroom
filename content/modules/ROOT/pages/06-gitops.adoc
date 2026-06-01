@@ -11,7 +11,7 @@
 
 As an OpenShift administrator managing multiple clusters, you need every cluster configured the same way - same quotas, same network policies, same security baselines. Making these changes manually on each cluster is slow, error-prone, and impossible to audit.
 
-GitOps solves this by treating cluster configuration as code in a Git repository. A tool called ArgoCD continuously watches that repository and ensures every cluster matches the desired state. If someone makes a manual change, ArgoCD detects the drift and can automatically fix it.
+Infrastructure as Code (IaC) solves this by managing configuration through version-controlled files rather than manual changes. GitOps takes IaC further — your cluster configuration lives in a Git repository as the single source of truth, and a tool called ArgoCD continuously watches that repository and ensures every cluster matches the desired state. If someone makes a manual change, ArgoCD detects the drift and can automatically fix it.
 
 In this module, you will use ArgoCD to deploy a production-ready project configuration from Git, then break it on purpose and watch ArgoCD catch the drift.
 
