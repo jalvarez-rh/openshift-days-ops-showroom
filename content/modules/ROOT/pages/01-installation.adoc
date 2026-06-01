@@ -69,7 +69,7 @@ Check the `Conditions` section for details about why it's degraded.
 * `monitoring` degraded - Storage or resource issues
 * `authentication` degraded - OAuth or LDAP configuration issues
 
-**Console view:** Switch to the **OCP Console** tab and navigate to **Administration -> Cluster Settings -> ClusterOperators**. The console shows each operator with green/red status icons - degraded operators are immediately visible without scanning a 34-row table. This is faster than CLI for a quick health check.
+**Console view:** Switch to the **OCP Console** tab and navigate to **Administration -> Cluster Settings**, then select the **ClusterOperators** tab. The console shows each operator with green/red status icons - degraded operators are immediately visible without scanning a 34-row table. This is faster than CLI for a quick health check.
 
 image::installation-images/clusteroperators-console.png[ClusterOperators in web console]
 
