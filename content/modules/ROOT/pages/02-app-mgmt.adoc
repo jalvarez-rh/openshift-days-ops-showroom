@@ -130,7 +130,7 @@ Check the route:
 oc get route weathernow -n app-management
 ----
 
-Now go back to the **Topology view** in the console. You'll see the route icon has appeared on the application:
+Now go back to **Workloads → Topology** (project: `app-management`) in the console. You'll see the route icon has appeared on the application:
 
 image::app-mgmt-deploy-topology.png[Topology view showing weathernow application with route]
 
