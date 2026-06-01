@@ -81,11 +81,11 @@ NOTE: This may take a minute to complete. Only press **Ctrl+C** if it has been r
 
 Now let's examine its networking. In the **OCP Console**, navigate to **Networking -> Routes** (project: `ingress-demo`). You'll see the `test-app` route with its status, clickable URL, and target service:
 
-image::ingress-images/ingress-weathernow-route.png[Test app route in the console]
+image::ingress-images/ingress-weathernow-route.png[test-app route in the console]
 
 Click the route name to see the full details including TLS settings and router information:
 
-image::ingress-images/ingress-route-details.png[Weathernow route details showing TLS edge termination]
+image::ingress-images/ingress-route-details.png[test-app route details showing TLS edge termination]
 
 === View the Route Configuration
 
