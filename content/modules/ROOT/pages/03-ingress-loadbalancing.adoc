@@ -111,7 +111,7 @@ curl -sk https://$(oc get route test-app -o jsonpath='{.spec.host}') | head -5
 
 This request flows: **Client -> Ingress Controller -> Service -> Pod**
 
-You should see HTML returned from the web server (the default Apache test page).
+You should see HTML returned from the web server (the default test page).
 
 == TLS Termination Strategies
 
