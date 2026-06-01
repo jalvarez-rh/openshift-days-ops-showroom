@@ -152,7 +152,7 @@ image::gitops-dashboard-synced.png[ArgoCD dashboard filtered by workshop project
 * **Green heart** = Healthy
 * **Green circle with tick** = Synced
 
-==== Explore the Application in ArgoCD
+**Explore the Application in ArgoCD**
 
 Click on the `managed-project` tile to open the application detail view. You'll see a **resource tree** showing the relationship between all managed resources:
 
@@ -177,7 +177,7 @@ This is where you'll spend most of your time as an admin - checking that resourc
 
 Click the **X** in the top-right corner to return to the `managed-project` application overview.
 
-==== Explore the Application Details
+**Explore the Application Details**
 
 Click the **Details** button in the top toolbar. This shows the application configuration:
 

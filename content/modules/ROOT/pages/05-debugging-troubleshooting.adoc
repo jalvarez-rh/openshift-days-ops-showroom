@@ -79,7 +79,7 @@ NOTE: You might notice `weather-cache` is missing from the pod list - that's one
 
 === Problem 1: ImagePullBackOff (weather-frontend)
 
-==== Diagnose
+**Diagnose**
 
 In the **OCP Console**, click on the `weather-frontend` pod. The **Events** tab at the bottom shows the error with colour-coded severity - you'll see the image pull failure immediately.
 
@@ -105,7 +105,7 @@ The image tag `9.9` doesn't exist. Let's confirm the image reference:
 oc get deployment weather-frontend -n debug-lab -o jsonpath='{.spec.template.spec.containers[0].image}'
 ----
 
-==== Fix
+**Fix**
 
 Update the image to the correct tag (`latest`):
 
@@ -114,7 +114,7 @@ Update the image to the correct tag (`latest`):
 oc set image deployment/weather-frontend weather-frontend=registry.access.redhat.com/ubi9/httpd-24:latest -n debug-lab
 ----
 
-==== Verify
+**Verify**
 
 [source,bash,role="execute"]
 ----
@@ -127,7 +127,7 @@ You should see `1/1 Running`.
 
 === Problem 2: CrashLoopBackOff (weather-api)
 
-==== Diagnose
+**Diagnose**
 
 The pod keeps starting and crashing. In the **OCP Console**, click the `weather-api` pod, then the **Logs** tab. The log viewer shows the error message with real-time streaming. If the pod has restarted, use the **Container** dropdown to select the previous container's logs.
 
@@ -148,7 +148,7 @@ Error: Missing required config file /etc/weather/config.yaml
 
 The app is trying to read a config file that doesn't exist.
 
-==== Fix
+**Fix**
 
 Create the missing config file as a ConfigMap and mount it into the container. We'll also fix the container command to run the actual application:
 
@@ -166,7 +166,7 @@ oc patch deployment weather-api -n debug-lab --type=json -p='[
 ]'
 ----
 
-==== Verify
+**Verify**
 
 [source,bash,role="execute"]
 ----
@@ -179,7 +179,7 @@ You should see `1/1 Running`.
 
 === Problem 3: Resource Constraint Violation (weather-cache)
 
-==== Diagnose
+**Diagnose**
 
 You may have noticed `weather-cache` doesn't appear in the pod list at all. In the **OCP Console**, navigate to **Workloads -> Deployments** (project: `debug-lab`) and click `weather-cache`. The **Events** tab immediately shows the `FailedCreate` error explaining why no pod was created.
 
@@ -217,7 +217,7 @@ oc get deployment weather-cache -n debug-lab -o jsonpath='{.spec.template.spec.c
 oc get limitrange -n debug-lab -o yaml | grep -A4 "max:"
 ----
 
-==== Fix
+**Fix**
 
 Fix the memory typo - change `512Gi` to `512Mi` and `1Ti` to `1Gi`:
 
@@ -226,7 +226,7 @@ Fix the memory typo - change `512Gi` to `512Mi` and `1Ti` to `1Gi`:
 oc set resources deployment/weather-cache -n debug-lab --requests=cpu=100m,memory=512Mi --limits=cpu=500m,memory=1Gi
 ----
 
-==== Verify
+**Verify**
 
 [source,bash,role="execute"]
 ----
@@ -239,7 +239,7 @@ You should see `1/1 Running`. The pod can now be created because the resource re
 
 === Problem 4: CreateContainerConfigError (weather-backend)
 
-==== Diagnose
+**Diagnose**
 
 [source,bash,role="execute"]
 ----
@@ -259,7 +259,7 @@ The deployment references a ConfigMap that doesn't exist:
 oc get deployment weather-backend -n debug-lab -o jsonpath='{.spec.template.spec.containers[0].envFrom}' | python3 -m json.tool
 ----
 
-==== Fix
+**Fix**
 
 Create the missing ConfigMap with the keys the app expects:
 
@@ -280,7 +280,7 @@ Restart the pod to pick up the new ConfigMap:
 oc delete pod -l app=weather-backend -n debug-lab
 ----
 
-==== Verify
+**Verify**
 
 [source,bash,role="execute"]
 ----
@@ -307,7 +307,7 @@ TIP: In the console, click the weather-backend pod and select the **Environment*
 
 === Problem 5: Service Routing Broken (weather-proxy)
 
-==== Diagnose
+**Diagnose**
 
 This pod is `Running` - so what's wrong? In the **OCP Console**, navigate to **Networking -> Services** (project: `debug-lab`) and click `weather-proxy`. The **Pods** tab shows **0 Pods** - immediately revealing that the service can't find any matching pods.
 
@@ -331,7 +331,7 @@ echo "=== Service selector ===" && oc get svc weather-proxy -n debug-lab -o json
 
 Spot the difference? The service selector says `weather-proxi` (typo) but the pod label is `weather-proxy`.
 
-==== Fix
+**Fix**
 
 Patch the service selector to match the actual pod label:
 
@@ -340,7 +340,7 @@ Patch the service selector to match the actual pod label:
 oc patch svc weather-proxy -n debug-lab -p '{"spec":{"selector":{"app":"weather-proxy"}}}'
 ----
 
-==== Verify
+**Verify**
 
 [source,bash,role="execute"]
 ----
@@ -353,7 +353,7 @@ You should now see the pod's IP in the `ENDPOINTS` column. Traffic will flow to 
 
 === Problem 6: Permission Denied (weather-db)
 
-==== Diagnose
+**Diagnose**
 
 Check the pod status:
 
@@ -382,7 +382,7 @@ It shows `restricted-v2`. This SCC assigns a random user ID to the container for
 
 This is the most common source of pod failures on OpenShift. Containers that expect to run as root will fail under `restricted-v2`.
 
-==== Fix
+**Fix**
 
 Mount an `emptyDir` volume at the data path. The container can always write to emptyDir volumes regardless of its UID:
 
@@ -394,7 +394,7 @@ oc patch deployment weather-db -n debug-lab --type=json -p='[
 ]'
 ----
 
-==== Verify
+**Verify**
 
 [source,bash,role="execute"]
 ----

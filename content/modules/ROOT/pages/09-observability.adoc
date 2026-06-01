@@ -188,7 +188,7 @@ Your alert fired - but who got notified? Right now, nobody. Alertmanager has rec
 
 In production, that means an overnight incident goes unnoticed until someone checks the console in the morning. Let's fix that by wiring up email notifications.
 
-==== Deploy a Mail Server
+**Deploy a Mail Server**
 
 Deploy Mailpit - a lightweight mail server that catches emails and shows them in a web inbox. This simulates what an internal mail relay does in production:
 
@@ -197,7 +197,7 @@ Deploy Mailpit - a lightweight mail server that catches emails and shows them in
 bash <(curl -sL https://raw.githubusercontent.com/rhpds/openshift-days-ops-showroom/main/support/09-observability/deploy-mailpit.sh)
 ----
 
-==== Configure Alertmanager
+**Configure Alertmanager**
 
 Now configure Alertmanager to send emails through Mailpit. This routes warning alerts to `ops-team@example.com` and critical alerts to `oncall@example.com`:
 
@@ -219,7 +219,7 @@ Click on any email to see the full alert details - alert name, namespace, severi
 
 In production, you would replace `mailpit.alert-demo.svc:1025` with your organization's SMTP relay and use real email addresses. Alertmanager also supports Slack, PagerDuty, and webhooks using the same routing structure - see link:https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/monitoring/managing-alerts#sending-notifications-to-external-systems_managing-alerts[Sending notifications to external systems, window=blank].
 
-==== Restore Alertmanager
+**Restore Alertmanager**
 
 Reset Alertmanager to its default configuration and clean up:
 
@@ -273,7 +273,7 @@ EOF
 
 Install the Loki Operator from the Software Catalog - this is the same process for any operator in OperatorHub.
 
-==== Loki Operator (log storage)
+**Loki Operator (log storage)**
 
 1. Navigate to **Ecosystem -> Software Catalog**
 2. Search for **Loki Operator**
@@ -290,7 +290,7 @@ You'll see the "Installing Operator" confirmation:
 
 image::obs-loki-installing.png[Loki Operator installing confirmation]
 
-==== Remaining Operators
+**Remaining Operators**
 
 You've seen how OperatorHub works. The remaining operators use the same process - let's script them. This will take a couple of minutes to complete:
 

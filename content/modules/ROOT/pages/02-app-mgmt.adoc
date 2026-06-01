@@ -209,7 +209,7 @@ How does OpenShift know if your application is actually healthy? Without probes,
 * **Readiness probe** - "Can this pod handle traffic?" If it fails, the pod is removed from the service endpoints. No requests get sent to it.
 * **Liveness probe** - "Is this pod still alive?" If it fails, OpenShift restarts the container.
 
-==== Break It On Purpose
+**Break It On Purpose**
 
 Let's see what happens when probes fail. Add a readiness probe pointing at the **wrong port** - port 9999, where nothing is listening:
 
@@ -259,7 +259,7 @@ oc describe pod -l deployment=weathernow -n app-management | grep -A2 "Readiness
 
 The pod is alive but not ready. No traffic reaches it. This is exactly what happens in production when an app's health endpoint goes down - OpenShift protects users from broken pods automatically.
 
-==== Fix the Probe
+**Fix the Probe**
 
 Now fix it - point the readiness probe at port 8080 where httpd is actually listening, and add a liveness probe too:
 

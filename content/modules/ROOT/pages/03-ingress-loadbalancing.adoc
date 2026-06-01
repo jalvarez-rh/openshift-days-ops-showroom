@@ -176,7 +176,7 @@ image::ingress-images/ingress-routes-all.png[All routes across the cluster with 
 
 Routes support annotations that control rate limiting, security headers, and HTTP behavior. Let's apply them and prove they work.
 
-==== HTTP to HTTPS Redirect
+**HTTP to HTTPS Redirect**
 
 By default, HTTP requests to an edge route get a generic 503 page. In production, you want HTTP to redirect to HTTPS automatically.
 
@@ -213,7 +213,7 @@ The three options for `insecureEdgeTerminationPolicy`:
 * **None** - reject HTTP entirely (503)
 * **Allow** - serve content over HTTP too (not recommended)
 
-==== HSTS (HTTP Strict Transport Security)
+**HSTS (HTTP Strict Transport Security)**
 
 HSTS tells browsers to always use HTTPS - even if the user types `http://`. This prevents downgrade attacks.
 
@@ -240,7 +240,7 @@ curl -sk -D - "https://$(oc get route weathernow -o jsonpath='{.spec.host}')" 2>
 
 The `strict-transport-security` header is now in every response. Browsers that see this will refuse to use HTTP for this domain for one year (`max-age=31536000`).
 
-==== Rate Limiting Under Load
+**Rate Limiting Under Load**
 
 Apply rate limiting to restrict concurrent connections:
 
