@@ -345,9 +345,9 @@ Active alerts, utilization graphs, and per-pod resource usage are all in one con
 
 image::nodes-console-view.png[Nodes Console View]
 
-**Infrastructure Management**
+=== Infrastructure Management
 
-**MachineSets - Automated Infrastructure Scaling**
+=== MachineSets - Automated Infrastructure Scaling
 
 OpenShift uses **MachineSets** to automate infrastructure scaling. On cloud platforms (AWS, Azure, GCP), MachineSets manage worker nodes across availability zones - you can scale up by changing a replica count rather than manually provisioning machines.
 
