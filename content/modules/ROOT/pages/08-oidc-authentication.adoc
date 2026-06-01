@@ -248,7 +248,7 @@ TIP: You can also see the auto-created groups in the console at **User Managemen
 oc get user developer1 -o yaml
 ----
 
-In the output, look at the `identities` section — it shows the identity provider (`rhbk`) and the identifier of the user. The user was created automatically on first login. Also notice `groups: null` — the user has no roles or group bindings yet. That's what we'll configure next.
+In the output, look at the `identities` section — it shows the identity provider (`rhbk`) and the identifier of the user. The user was created automatically on first login.
 
 == Configure RBAC
 
